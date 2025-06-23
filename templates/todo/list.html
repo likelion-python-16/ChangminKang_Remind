@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="todocontainer"></div>
+  <!-- {% for todo in todos %}
+    <div class = "todo-item">
+      <p>{{ todo.name }}</p>
+      <P>{{ todo.description }}</P>
+      <P>{{ todo.complete }}</P>
+      <P>{{ todo.completed_at }}</P>
+      <P>{{ todo.exp }}</P>
+      <hr>
+    </div>
+  {% empty %}
+      <p>등록된 할 일이 없습니다.</p>
+  {% endfor %} -->
+
+<button class="todoCreate" id = "createBtn"> Todo 등록하기</button>
+
+<!-- <script> 
+// 역할: 웹페이지가 완전히 로드되었을 때 실행됩니다.
+
+// 지금 하는 일: 그냥 "list loading"이라는 로그만 찍습니다.
+
+// 예정된 일: 나중에 서버에서 데이터를 가져와서 화면에 리스트를 보여주는 코드(API 호출 등)로 바꿔야 합니다.
+    document.addEventListener("DOMContentLoaded", function(){
+      console.log("list loading")
+    });
+
+// ✅ 역할: id가 "createBtn"인 버튼을 사용자가 클릭했을 때 실행됩니다.
+
+// ✅ 지금 하는 일: 콘솔에 "createBtn click!!"만 출력.
+
+// 🔜 예정된 일: 서버에 새로운 데이터를 전송(post) 하는 코드로 바뀔 예정입니다.
+
+
+    document.getElementById("createBtn").addEventListener("click", () => {
+      console.log("createBtn click!!")
+    });
+
+</script> -->
+
+<script>  
+// 1. 문서가 완전히 로드되면 초기화 함수 init()을 실행합니다. //
+document.addEventListener("DOMContentLoaded", init); 
+// 페이지가 완전히 로드되면(DomContentLoaded는 **"HTML이 완전히 로드됐을 때 실행하라"**는 뜻)init 함수를 실행합니다. //
+
+// 2. UI 이벤트 / 사용자 인터페이스와 상호작용하는 이벤트를 처리합니다. // 초기화: UI 이벤트 연결 및 첫 페이지 Todo 목록 로드
+function init() {
+    UIEvents(); // 사용자 인터페이스와 상호작용하는 이벤트를 초기화합니다.  ➜ “버튼 클릭, 입력창 등 사용자 인터페이스에 필요한 이벤트 설정을 시작해!” (2-1)
+    loadTodoList(); // todo 목록을 불러옵니다. 데이터가 10개 이상일 때는 페이지네이션을 고려해야 합니다. 페이지네이션을 위해서는 개별 함수가 필요
+}
+
+//2-1. UI 이벤트 바인딩: "Todo 등록하기" 버튼 클릭 시 등록 페이지로 이동
+function UIEvents() {
+    // 1. todo 등록 버튼 클릭 이벤트
+    document.getElementById("createBtn")
+    .addEventListener("click", onCreateClick);
+    // "createBtn"이라는 ID를 가진 버튼을 클릭했을 때 onCreateClick 함수를 실행합니다. //
+}
+//2-1-1. 등록 버튼 클릭 시 /todo/create/로 이동
+function onCreateClick() {
+  window.location.href = "/todo/create/";
+}
+
+// 리스트 로드 & 데이터 처리
+// 목록 불러오기, 특정 목록을 클릭(pk가 클릭할 수 있게 하여 링크 이동)
+// 페이지네이션은 viewset이랑 어울려 정의만 할 예정
+// 지정한 페이지 번호의 Todo 목록을 서버에서 받아와서 화면에 넣어준다. 
+
+//3. 서버에서 Todo 목록 불러오기
+function loadTodoList(){// 페이지네이션을 고려하여 페이지 번호를 매개변수로 받습니다.
+  fetchTodoData() //fetchTodoData()라는 함수에 page 값을 넣어서 서버에 데이터 요청을 하는 거예요. (3-1)
+  .then(data => { // data를 받아서 중괄호에 넣어서 코드 실행해라    //받아온 데이터에서 실제 todo 항목만 꺼냄
+    const todos = extractTodoArray(data); // 서버에서 받아온 데이터 중 todo 항목만 추출한 배열입니다. (constant) 상수라서 다른 값으로 바꿀 수 없게 만듬 (변수 = [] for문 돌려서 빈그릇에 넣는 것과 비슷) (3-2)
+    renderTodoList(todos); // 꺼낸 todo 항목을 화면에 보여주는 함수 호출 // todos는 서버에서 받아온 데이터 중 todo 항목만 추출한 배열입니다. (3-3)
+    // renderPagination(data, page); // 3-4. 페이지네이션 표시
+  })
+  .catch(err => console.error("리스트 로드 실패", err));
+}
+
+// 3-1 axios를 사용하여 서버에서 todo 데이터를 가져오는 함수
+// 페이지 번호를 매개변수로 받아서 해당 페이지의 데이터를 요청합니다.
+function fetchTodoData() {
+  return axiosInstance.get(`/todo/api/list/`).then(response => response.data);// cdn.jsdelivr.net/npm/axios/dist/axios.min.js를 통해 불러온 axios 라이브러리 인스턴스를 사용합니다. // return을 통해 임시저장하여 추후에 사용할 수 있게 합니다.
+     // 페이지 번호를 쿼리 파라미터로 전달하여 해당 페이지의 데이터를 요청합니다. // axiosInstance를 사용하여 GET 요청을 보냅니다. 이 인스턴스는 미리 설정된 기본 URL과 헤더를 가지고 있습니다.
+    // .get(`/todo/generic/list/?page=${page}`) 제너릭 방식
+    // .get(`/todo/viewset/view/?page=${page}`) 뷰셋 방식
+     // 응답에서 데이터 부분만 추출
+}
+
+//3-2. 서버에서 받은 데이터에서 todo 항목만 추출하는 함수 (API 응답 형식에 따라 Todo 배열 추출)
+// function extractTodoArray(data) {
+//     // 1) CustomPageNumberPagination 사용 시
+//     if (Array.isArray(data.data)) {
+//         return data.data;
+//     }
+//     // 2) 기본 PageNumberPagination 사용 시
+//     if (Array.isArray(data.results)) {
+//         return data.results;
+//     }
+//     // 3) Pagination 없이 순수 배열 리턴 시 --> 여기서 사용
+//     if (Array.isArray(data)) {
+//         return data;
+//     }
+//     return [];
+function extractTodoArray(data) {
+  // 서버에서 받은 데이터에서 todo 항목만 추출합니다.
+  // 예시: data가 { results: [...], count: 10, next: null, previous: null } 형태일 때 results 배열을 반환
+  if(Array.isArray(data)) return data;  //메서드로서 데이터가 배열인지 아닌지 판별
+  return[]; // results가 없으면 빈 배열을 반환합니다.
+}
+
+//3.3 서버에서 받아온 todo 항목을 화면에 표시하는 (함수 추출된 Todo 항목들을 화면에 렌더링)
+function renderTodoList(todos) {
+  const container = document.querySelector(".todocontainer"); // .todocontainer 클래스를 가진 요소를 선택합니다. .todocontainer{} 랑 같음 / 새로운 요소를 만들지 않고 기존 요소를 선택하여 사용합니다. //
+  // container는 todo 항목을 표시할 영역입니다.
+  container.innerHTML = ""; // 기존 내용을 비웁니다.
+  todos.forEach(todo => 
+    container.appendChild(createTodoElement(todo))
+  ); // 각 todo 항목을 화면에 추가합니다. // forEach는 배열의 각 요소에 대해 함수를 실행하는 메서드입니다. // createTodoItem(todo) 함수는 todo 항목을 HTML 요소로 변환하는 함수입니다.
+}
+
+// 3-3-1. 단일 Todo 객체를 HTML 요소로 생성
+function createTodoElement(todo) {
+  // todo 항목을 HTML 요소로 변환합니다.
+  const div = document.createElement("div"); // 새로운 div 요소를 생성합니다. //
+  div.className = "todo-item"; // 생성한 div에 클래스 이름을 추가합니다
+  // div는 각 todo 항목을 표시할 영역입니다.
+  // div는 todo 항목의 정보를 담는 컨테이너 역할을 합니다.
+
+  // 완료된 항목이면 밑줄 적용 ".todo-item.completed {}" 함수를 CSS로 정의하여 스타일을 적용합니다.
+  if (todo.complete) {
+    div.classList.add("completed"); // 완료된 항목에는 "completed" 클래스를 추가합니다.(".todo-item.completed {}"로 스타일로 넘어갈 수 있음) // 완료된 항목을 시각적으로 구분하기 위해 스타일을 적용합니다.
+    } 
+  else {
+    div.classList.remove("completed"); // 완료되지 않은 항목에서는 "completed" 클래스를 제거합니다.
+    }
+  
+    // // 목록 클릭 시 상세 페이지 이동
+    // div.addEventListener('click', () => detailView(todo.id));
+
+  // HTML 내용 설정
+  div.innerHTML = `
+    <p><strong>Name:</strong> ${todo.name}</p>
+    <p><strong>Description:</strong> ${todo.description}</p>
+    <p><strong>Complete:</strong> ${todo.complete}</p>
+    <p><strong>Completed At:</strong> ${datetimeToString(todo.completed_at)}</p>
+    <p><strong>Experience Points:</strong> ${todo.exp}</p>
+    <button class="completeBtn">완료</button>
+    <hr>
+  `;
+
+  // 완료 버튼 클릭시 완료 API 호출
+  div.querySelector(".completeBtn").addEventListener("click", e => {
+    // 완료 버튼 클릭 시 처리
+    e.stopPropagation(); // 이벤트 전파를 막습니다. // 이벤트가 상위 요소로 전파되는 것을 방지합니다.
+    toComplete(todo.id); // toComplete 함수는 todo 항목을 완료 상태로 변경하는 함수입니다. // todo.id는 완료할 todo 항목의 고유 ID입니다. function tocomplete(id) 속 id와 같은 역할을 합니다.
+  });
+
+return div; // 생성한 div 요소를 반환합니다. // 이 div는 todo 항목의 정보를 담고 있습니다. (3-3-1 div의 값 반환)
+}
+
+// 3-3-2. 완료 버튼 클릭 시 todo 항목을 완료 상태로 변경하는 함수
+function toComplete(id){
+  axiosInstance.patch(`/todo/api/update/${id}/`,{complete : true}) // axiosInstance를 사용하여 PATCH 요청을 보냅니다. // model에서 complete 필드를 true로 업데이트합니다.
+  .then(() => loadTodoList()) // 요청이 성공하면 아무것도 하지 않습니다. (false -> true로 변경되면 서버 전송 -> 화면에 표시(loadTodoList() 함수 호출))
+  .catch(err => console.error("완료 처리 실패:", err)); // 요청이 실패하면 에러를 처리합니다.
+}
+
+// // 3-3-3. 상세 페이지로 이동
+
+// function detailView(id) {
+//     window.location.href = `/todo/detail/${id}/`;
+// }
+
+// // 3-4. 페이지네이션 구성 (← 이전, 1 2 3, → 다음)
+// function renderPagination(data, currentPage) {
+//     const wrapper = document.querySelector('.pagination');
+//     wrapper.innerHTML = '';
+
+//     const totalPages = data.page_count;
+
+//      // 이전 페이지 버튼
+//     const prevBtn = document.createElement('button');
+//     prevBtn.innerText = '‹';
+//     prevBtn.disabled = !data.previous;
+//     prevBtn.addEventListener('click', () => loadTodoList(currentPage - 1));
+//     wrapper.appendChild(prevBtn);
+
+//     // 개별 페이지 버튼들 생성
+//     for (let i = 1; i <= totalPages; i++) {
+//         const btn = document.createElement('button');
+//         btn.innerText = i;
+//         if (i === currentPage) { //엄격한비교
+//             btn.disabled = true;
+//             btn.classList.add('active');  // CSS로 .active 스타일 지정
+//         }
+//         btn.addEventListener('click', () => loadTodoList(i));
+//         wrapper.appendChild(btn);
+//     }
+
+//     // 다음 페이지 버튼
+//     const nextBtn = document.createElement('button');
+//     nextBtn.innerText = '›';
+//     nextBtn.disabled = !data.next;
+//     nextBtn.addEventListener('click', () => loadTodoList(currentPage + 1));
+//     wrapper.appendChild(nextBtn);
+// }
+
+// 3-5. 날짜/시간을 한국 시간대의 문자열로 변환하는 함수
+function datetimeToString(datetime){ // datetime을 한국 시간대의 문자열로 변환하는 함수
+    if (!datetime) return "-"; // datetime이 없으면 "-"를 반환합니다.
+    const date = new Date(datetime); // datetime 문자열을 Date 객체로 변환합니다.
+    return date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); 
+} 
+
+</script>
+{% endblock %}

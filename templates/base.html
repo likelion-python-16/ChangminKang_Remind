@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head> <!--메타 정보와 스타일 데이터를 외부에서 가져옴-->
+    <!-- <meta charset="UTF-8">
+    <title>Todo List</title>
+    <style></style> ::스타일은 나중에 CSS 파일로 분리할 예정입니다.  -->
+    {% include "head.html" %}  
+</head>
+      
+<body>
+    <!--block content 밖에 쓰는 이유는 모든 페이지에서 공통으로 쓰일 것이므로 반대로 안에 쓰는 내용은 페이지별로 달라지는 내용(콘텐츠)-->
+    {% include "header.html" %} 
+        {% block content %}{% endblock %}
+    {% include "footer.html" %} 
+<!--Global Scripts : 개발자가 코드를 쉽게 이해하고 정리하기 위해 쓰는 설명 표시-->
+<script src="{% static 'js/getCookie.js'%}"> </script> <!--src는 source로서 경로를 지정, 즉 브라우저에게 "이 JS 파일을 서버에서 불러와서 실행해줘"-->
+<script src="{% static 'js/axiosInstance.js'%}"> </script> <!--src는 source로서 경로를 지정, 즉 브라우저에게 "이 JS 파일을 서버에서 불러와서 실행해줘"-->
+<!--✅ static이란?Django에서 CSS, JS, 이미지 같은 정적인 파일을 다루기 위한 시스템입니다 / "정적(static) 파일의 URL 경로를 생성"해주는 도구-->
+</body>
+</html>
