@@ -83,7 +83,7 @@ function loadTodoList(){// 페이지네이션을 고려하여 페이지 번호�
 // 3-1 axios를 사용하여 서버에서 todo 데이터를 가져오는 함수
 // 페이지 번호를 매개변수로 받아서 해당 페이지의 데이터를 요청합니다.
 function fetchTodoData() {
-  return axiosInstance.get(`/todo/api/list/`).then(response => response.data);// cdn.jsdelivr.net/npm/axios/dist/axios.min.js를 통해 불러온 axios 라이브러리 인스턴스를 사용합니다. // return을 통해 임시저장하여 추후에 사용할 수 있게 합니다.
+  return axiosInstance.get(`/api/list/`).then(response => response.data);// cdn.jsdelivr.net/npm/axios/dist/axios.min.js를 통해 불러온 axios 라이브러리 인스턴스를 사용합니다. // return을 통해 임시저장하여 추후에 사용할 수 있게 합니다.
      // 페이지 번호를 쿼리 파라미터로 전달하여 해당 페이지의 데이터를 요청합니다. // axiosInstance를 사용하여 GET 요청을 보냅니다. 이 인스턴스는 미리 설정된 기본 URL과 헤더를 가지고 있습니다.
     // .get(`/todo/generic/list/?page=${page}`) 제너릭 방식
     // .get(`/todo/viewset/view/?page=${page}`) 뷰셋 방식
@@ -137,12 +137,12 @@ function createTodoElement(todo) {
   else {
     div.classList.remove("completed"); // 완료되지 않은 항목에서는 "completed" 클래스를 제거합니다.
     }
-  
-    // // 목록 클릭 시 상세 페이지 이동
-    // div.addEventListener('click', () => detailView(todo.id));
 
-  // HTML 내용 설정
-  div.innerHTML = `
+  div.addEventListener('click', () => detailView(todo.id)); // 목록 클릭 시 상세 페이지로 이동하는 이벤트 리스너를 추가합니다. 
+  // todo.id는 클릭한 todo 항목의 고유 ID입니다. // 이 ID를 사용하여 상세 페이지로 이동합니다. // 3-3-3. 상세 페이지로 이동하는 함수 detailView(id)를 호출합니다.
+
+  // HTML 내용 설정 
+  div.innerHTML = ` 
     <p><strong>Name:</strong> ${todo.name}</p>
     <p><strong>Description:</strong> ${todo.description}</p>
     <p><strong>Complete:</strong> ${todo.complete}</p>
@@ -150,7 +150,7 @@ function createTodoElement(todo) {
     <p><strong>Experience Points:</strong> ${todo.exp}</p>
     <button class="completeBtn">완료</button>
     <hr>
-  `;
+  `; // backtick(``)을 사용하여 여러 줄의 HTML을 작성합니다. (= f" " 와 같은 구조) // todo 항목의 정보를 표시하는 HTML 구조를 만듭니다. // todo.completed_at은 날짜/시간 형식으로 되어 있으므로 datetimeToString 함수를 사용하여 한국 시간대의 문자열로 변환합니다.
 
   // 완료 버튼 클릭시 완료 API 호출
   div.querySelector(".completeBtn").addEventListener("click", e => {
@@ -164,16 +164,19 @@ return div; // 생성한 div 요소를 반환합니다. // 이 div는 todo 항�
 
 // 3-3-2. 완료 버튼 클릭 시 todo 항목을 완료 상태로 변경하는 함수
 function toComplete(id){
-  axiosInstance.patch(`/todo/api/update/${id}/`,{complete : true}) // axiosInstance를 사용하여 PATCH 요청을 보냅니다. // model에서 complete 필드를 true로 업데이트합니다.
+  axiosInstance.patch(`api/update/${id}/`,{complete : true}) // axiosInstance를 사용하여 PATCH 요청을 보냅니다. // model에서 complete 필드를 true로 업데이트합니다.
   .then(() => loadTodoList()) // 요청이 성공하면 아무것도 하지 않습니다. (false -> true로 변경되면 서버 전송 -> 화면에 표시(loadTodoList() 함수 호출))
   .catch(err => console.error("완료 처리 실패:", err)); // 요청이 실패하면 에러를 처리합니다.
 }
 
-// // 3-3-3. 상세 페이지로 이동
+// 3-3-3. 상세 페이지로 이동
 
-// function detailView(id) {
-//     window.location.href = `/todo/detail/${id}/`;
-// }
+function detailView(id) {
+    window.location.href = `/todo/detail/${id}/`; // window 객체를 사용하여 브라우저의 현재 URL을 변경합니다. // id는 상세 페이지로 이동할 todo 항목의 고유 ID입니다. // 이 함수는 todo 항목의 상세 정보를 보여주는 페이지로 이동합니다. 
+}
+
+
+
 
 // // 3-4. 페이지네이션 구성 (← 이전, 1 2 3, → 다음)
 // function renderPagination(data, currentPage) {
@@ -209,12 +212,12 @@ function toComplete(id){
 //     wrapper.appendChild(nextBtn);
 // }
 
-// 3-5. 날짜/시간을 한국 시간대의 문자열로 변환하는 함수
-function datetimeToString(datetime){ // datetime을 한국 시간대의 문자열로 변환하는 함수
-    if (!datetime) return "-"; // datetime이 없으면 "-"를 반환합니다.
-    const date = new Date(datetime); // datetime 문자열을 Date 객체로 변환합니다.
-    return date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); 
-} 
+// // 3-5. 날짜/시간을 한국 시간대의 문자열로 변환하는 함수
+// function datetimeToString(datetime){ // datetime을 한국 시간대의 문자열로 변환하는 함수
+//     if (!datetime) return "-"; // datetime이 없으면 "-"를 반환합니다.
+//     const date = new Date(datetime); // datetime 문자열을 Date 객체로 변환합니다.
+//     return date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); 
+// } 
 
 </script>
 {% endblock %}

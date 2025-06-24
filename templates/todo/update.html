@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container">
+    <h2> Update a Todo </h2>
+    <div>
+        <label for ="name">Name:</label>
+        <input type="text" name="name" id="name">
+    </div>
+    <div>
+        <label for ="description">Description:</label>
+        <textarea name= "description" id="description"></textarea> <!-- 긴글의 경우 textarea 를 쓰고 type 따로 지정 필요 없음 -->
+    </div>
+    <div>
+        <label for ="complete">Complete:</label>
+        <input type="checkbox" name= "complete" id="complete">
+    </div>
+    <div>        
+        <label for ="exp">Experience Points:</label>
+        <input type="number" name= "exp" id="exp" min="0"> <!--음수를 쓸 수 없기에 최소 0을 지정-->
+    </div>
+    <button type="submit" id="todoCreate">Update</button>
+</div>
+
+{% endblock %}

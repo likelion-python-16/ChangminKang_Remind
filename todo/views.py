@@ -52,19 +52,21 @@ class TodoUpdateViews(UpdateView):
     model = Todo
     template_name = "todo/update.html"
     fields = ["name", "description", "complete", "exp"]
+    context_object_name = "todos"
+    # fields는 모델의 필드를 지정하는 옵션입니다.
     success_url = reverse_lazy("todo_List")
     # CreateView를 사용했지만, UpdateView로 변경하는 것이 더 적절합니다
     # UpdateView는 기존 객체를 수정하는 데 사용되며, CreateView는 새로운 객체를 생성하는 데 사용됩니다.
     # 따라서, TodoUpdateViews는 UpdateView로 변경하는 것이 좋습니다.
     # UpdateView를 사용하면, 기존 객체를 수정할 때 자동으로 해당 객체를 가져와서 수정할 수 있습니다.
 
-#삭제
-class TodoDeleteViews(DeleteView):
-    model = Todo
-    template_name = "todo/delete.html"
-    context_object_name = "todos"
-    success_url = reverse_lazy("todo_List")
-    # DeleteView는 객체를 삭제하는 데 사용됩니다. 
-    # 이 클래스는 객체를 삭제할 때 자동으로 해당 객체를 가져와서 삭제할 수 있습니다.
-    # 따라서, TodoDeleteViews는 DeleteView로 변경하는 것이 좋습니다.
-    # DeleteView를 사용하면, 기존 객체를 삭제할 때 자동으로 해당 객체를 가져와서 삭제할 수 있습니다.
+# #삭제
+# class TodoDeleteViews(DeleteView):
+#     model = Todo
+#     template_name = "todo/delete.html"
+#     context_object_name = "todos"
+#     success_url = reverse_lazy("todo_List")
+#     # DeleteView는 객체를 삭제하는 데 사용됩니다. 
+#     # 이 클래스는 객체를 삭제할 때 자동으로 해당 객체를 가져와서 삭제할 수 있습니다.
+#     # 따라서, TodoDeleteViews는 DeleteView로 변경하는 것이 좋습니다.
+#     # DeleteView를 사용하면, 기존 객체를 삭제할 때 자동으로 해당 객체를 가져와서 삭제할 수 있습니다.

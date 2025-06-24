@@ -121,17 +121,41 @@ class TodoRetrieveAPI(APIView):
         return Response(serializer.data)
     
 class TodoUpdateAPI(APIView):
-    def put(self, request, pk):
+    def put(self, request, pk): #put은 전체 업데이트를 위한 메소드로, 모든 필드를 포함한 데이터를 보내야 합니다.
         try:
             todo = Todo.objects.get(pk=pk)
         except Todo.DoesNotExist:
             return Response({"Error":"해당 Todo가 없습니다"}, status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = TodoSerializer(todo, data=request.data) #request.data는 클라이언트가 보낸 데이터
+        serializer = TodoSerializer(todo, data=request.data)
         serializer.is_valid(raise_exception=True) #유효성 검사
-        todo = serializer.save() #save는 평탄화된 데이터를 저장하는 것
-        return Response(TodoSerializer(todo).data, status=status.HTTP_200_OK)
+        todo = serializer.save() #save는 저장하는 메소드
+        serializer = TodoSerializer(todo)
+        # serializer.save()는 수정된 데이터를 저장하고, 다시 serializer를 통해 평탄화
+        return Response(serializer.data)
+        
+    def patch(self, request, pk): 
+        # patch는 부분 업데이트를 위한 메소드로, 전체 데이터를 보내지 않고 일부만 수정할 때 사용
+        # 예를 들어, 완료 상태만 변경하고 싶을 때 유용
+        try:
+            todo = Todo.objects.get(pk=pk)
+        except Todo.DoesNotExist:
+            return Response({"Error":"해당 Todo가 없습니다"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TodoSerializer(todo, data=request.data) # Todo 모델 인스턴스와 요청 데이터를 기반으로 serializer를 생성
+        # data=request.data 는 요청에서 받은 데이터를 serializer에 전달
+        # 이때 request.data는 JSON 형태로 전달된 데이터입니다. 
+        # serializer는 이 데이터를 Todo 모델에 맞게 변환합니다.
+        # 예를 들어, {"name": "새로운 이름"} 이라면, Todo 모델의 name 필드만 업데이트합니다.
+        # 만약 name 필드만 보내면, 나머지 필드는 그대로 유지됩니다
+        # Serializer는 우리가 Django에서 사용하는 파이썬 객체나 쿼리셋 같이 복잡한 객체들을 Rest API에서 사용할 간단한 JSON 형태로 변환해주는 어댑터
+        serializer.is_valid(raise_exception=True) #유효성 검사
+        if not serializer.is_valid():
+            print("유효성 검사 실패:", serializer.errors)
+        todo = serializer.save() #save는 저장하는 메소드
+        serializer = TodoSerializer(todo)
+        # serializer.save()는 수정된 데이터를 저장하고, 다시 serializer를 통해 평탄화
+        return Response(serializer.data)
 
+#삭제하기
 class TodoDeleteAPI(APIView):
     def delete(self, request, pk):
         try:
@@ -139,5 +163,7 @@ class TodoDeleteAPI(APIView):
         except Todo.DoesNotExist:
             return Response({"Error":"해당 Todo가 없습니다"}, status=status.HTTP_404_NOT_FOUND)
         
-        todo.delete() #삭제
-        return Response(status=status.HTTP_204_NO_CONTENT) #204는 삭제 성공을 의미
+        todo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT) #204는 성공적으로 삭제되었음을 나타내는 HTTP 상태 코드입니다. 
+        # 이 코드는 클라이언트에게 요청이 성공적으로 처리되었지만, 반환할 데이터가 없음을 의미합니다.
+        # 예를 들어, Todo를 삭제한 후에는 더 이상 해당 Todo에 대한 데이터를 반환할 필요가 없으므로, 빈 응답을 보내는 것입니다.
