@@ -156,7 +156,7 @@ class TodoUpdateAPI(APIView):
         return Response(serializer.data)
 
 #삭제하기
-class TodoDeleteAPI(APIView):
+class TodoDeleteAPI(APIView): # 인증이 필요 없는 API로 설정
     def delete(self, request, pk):
         try:
             todo = Todo.objects.get(pk=pk)
@@ -167,3 +167,54 @@ class TodoDeleteAPI(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT) #204는 성공적으로 삭제되었음을 나타내는 HTTP 상태 코드입니다. 
         # 이 코드는 클라이언트에게 요청이 성공적으로 처리되었지만, 반환할 데이터가 없음을 의미합니다.
         # 예를 들어, Todo를 삭제한 후에는 더 이상 해당 Todo에 대한 데이터를 반환할 필요가 없으므로, 빈 응답을 보내는 것입니다.
+
+
+#DRF _ GenericAPIView
+
+
+from rest_framework import generics
+
+#- list
+
+class TodoGenericsListAPI(generics.ListAPIView):
+    queryset = Todo.objects.all()  # 전체 Todo 목록을 가져오는 쿼리셋
+    serializer_class = TodoSerializer  # 사용할 직렬화 클래스 지정
+
+#- create  
+
+class TodoGenericsCreateAPI(generics.CreateAPIView):
+    pass
+
+#- retrieve
+
+class TodoGenericsRetrieveAPI(generics.RetrieveAPIView):
+    pass
+
+#- update
+
+class TodoGenericsUpdateAPI(generics.UpdateAPIView):
+    pass
+
+#- delete
+
+class TodoGenericsDeleteAPI(generics.DestroyAPIView):
+    pass
+
+# List Create
+class TodoGenericsListCreateAPI(generics.ListCreateAPIView):
+    pass
+
+# 섞을 수도 있음 retrieve, update, delete를 섞어서 사용할 수도 있음(retrieveUpdateDelete)
+
+class TodoGenericsRetrieveUpdateDeleteAPI(generics.RetrieveUpdateDestroyAPIView):
+    pass
+
+
+
+
+
+
+
+
+
+#DRF _ viewsets
