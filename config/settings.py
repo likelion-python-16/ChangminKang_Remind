@@ -11,16 +11,23 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os, environ #환경변수 추가
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent # __file__은 현재 파일의 경로를 나타내고, resolve()는 절대 경로로 변환합니다. parent.parent는 두 단계 위 디렉토리를 의미합니다. manage.py가 있는 디렉토리까지 올라갑니다.
+
+# 보안코드
+env = environ.Env(
+    DEBUG=(bool, False),  # DEBUG 환경변수는 기본값이 False입니다. bool 타입으로 설정합니다.
+)
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))  # .env 파일을 읽어옵니다. 이 파일은 환경변수를 정의하는 데 사용됩니다.
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z!)3ctrbcadoe03uopo9i(nz7d$52cz@vxc#)!smrft325y-@+'
+SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,16 +37,20 @@ ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
-INSTALLED_APPS = [
+CUSTOM_APPS = [
+  'todo',  # todo 앱을 추가합니다. 이 앱은 todo 관련 기능을 구현합니다.
+]
+
+THIRD_PARTY_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'todo',
     'rest_framework',
 ]
+INSTALLED_APPS = CUSTOM_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -131,12 +142,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
-# Authentication settings
-LOGIN_REDIRECT_URL = "todo_List"  # 로그인 후 리다이렉트할 URL 설정
-LOGOUT_REDIRECT_URL = "todo_List"  # 로그아웃 후 리다이렉트할 URL 설정
-
 
 REST_FRAMEWORK = {
+    # 페이지네이션 클래스 : 커스텀 지정
     "DEFAULT_PAGINATION_CLASS": "todo.pagination.CustomPageNumberPagination", # DRF에서 사용할 기본 페이지네이션 클래스를 지정합니다. 이 예시에서는 todo/pagination.py에 있는 CustomPageNumberPagination을 사용합니다.
-    "PAGE_SIZE": 5, # 	PageNumberPagination 또는 이를 상속한 커스텀 페이지네이션 클래스에서 1페이지에 몇 개의 데이터를 보여줄지 설정
+    "PAGE_SIZE": 3, # 	PageNumberPagination 또는 이를 상속한 커스텀 페이지네이션 클래스에서 1페이지에 몇 개의 데이터를 보여줄지 설정
+
+    #인증 클래스: 사용자의 로그인 여부를 판단하는 방법 지정
+        #JWT 토큰 기반 인증 # JWT(JSON Web Token) 인증을 사용합니다. 이 설정은 Django REST Framework에서 JWT를 사용하여 사용자의 인증 상태를 확인합니다.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication", # 세션(쿠키: 방문할 때마다의 흔적) 인증을 사용합니다. 이 설정은 Django의 기본 인증 시스템을 사용하여 사용자의 로그인 상태를 확인합니다.
+    ],
+
+    #권한 클래스 : 인증된 사용자만 접근 가능하게 설정
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",  # 인증된 사용자만 접근할 수 있도록 설정합니다. 이 설정은 DRF의 기본 권한 클래스를 사용하여, 인증되지 않은 사용자는 API에 접근할 수 없도록 합니다.
+    
+    ]
 }
+# Authentication settings
+LOGIN_REDIRECT_URL = "todo_List"  # 로그인 후 리다이렉트할 URL 설정
+LOGOUT_REDIRECT_URL = "/api-auth/login/"  # 로그아웃 후 리다이렉트할 URL 설정
+
+# 이미지를 올리기 위한 설정
+MEDIA_URL = '/media/'  # 미디어 파일에 접근할 때 사용할 URL 경로
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 미디어 파일이 저장될 디렉토리 경로 (맨 위 폴더를 지정하면 됌)

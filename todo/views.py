@@ -27,7 +27,7 @@ class TodoListViews(ListView): #제너릭뷰 / urls.py 클래스형 명과 동�
 class TodoCreateViews(CreateView):
     model = Todo
     template_name = "todo/create.html"
-    fields = ["name", "description", "complete", "exp"]
+    fields = ["name", "description", "complete", "exp","image"]
     success_url = reverse_lazy("todo_List") ## reverse_lazy는 URL을 지연 평가하는 함수로, URL이 아직 정의되지 않았을 때도 사용할 수 있습니다.
     # reverse_lazy("todo_List")는 urls.py에서 정의한 todo_List라는 이름의 URL 패턴을 찾아서 해당 URL로 리다이렉트합니다.
     # 이때 reverse_lazy를 사용하면 URL이 아직 로드되지 않았더라도 안전하게 사용할 수 있습니다.
@@ -51,7 +51,7 @@ class TodoDetailViews(DetailView):
 class TodoUpdateViews(UpdateView):
     model = Todo
     template_name = "todo/update.html"
-    fields = ["name", "description", "complete", "exp"]
+    fields = ["name", "description", "complete", "exp", "image"]
     context_object_name = "todos"
     # fields는 모델의 필드를 지정하는 옵션입니다.
     success_url = reverse_lazy("todo_List")

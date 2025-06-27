@@ -3,6 +3,9 @@ from .models import Todo
 from .serializers import TodoSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
+#이미지 추가
+from rest_framework.parsers import MultiPartParser, FormParser # 파일 업로드를 위한 파서 클래스 (파일 업로드가 필요한 경우에만 사용)
 
 #전체 목록보기
 class TodoListAPI(APIView):
@@ -103,6 +106,7 @@ class TodoListAPI(APIView):
 # ]
 
 class TodoCreateAPI(APIView):
+
     def post(self, request):
         serializer = TodoSerializer(data=request.data)
         serializer.is_valid(raise_exception = True)
@@ -226,10 +230,49 @@ class TodoGenericsRetrieveUpdateDeleteAPI(generics.RetrieveUpdateDestroyAPIView)
     queryset = Todo.objects.all()  # 전체 Todo 목록을 가져오는 쿼리셋
     serializer_class = TodoSerializer  # 사용할 직렬화 클래스 지정
 
+
+
+
 #DRF _ viewsets
+
+from .pagination import CustomPageNumberPagination  # 커스텀 페이지네이션 클래스 가져오기
+# 커스텀 페이지네이션 클래스를 가져와서, GenericAPIView에 적용할 수 있습니다.
+# 이 페이지네이션 클래스는 페이지 크기를 동적으로 조정할 수 있는 기능을 제공합니다.
+# 예를 들어, 쿼리 파라미터로 page_size를 받아서, 그 값에 따라 페이지 크기를 조정할 수 있습니다.
+# 만약 page_size가 "all"이면 전체 데이터를 한 번에 보여줍니다.
+# 만약 page_size가 숫자가 아니면, 기본 페이지 크기를 사용합니다.
+# 이 설정은 서버의 성능을 보호하고, 너무 많은 데이터를 한 번에 처리하는 것을 방지하기 위해 사용됩니다.
+from rest_framework.authentication import SessionAuthentication  # 세션 인증 클래스
+from rest_framework.permissions import IsAuthenticated  # 인증된 사용자만 접근할 수 있도록 하는 권한 클래스
+# 이 설정은 해당 API에 접근하기 위해 사용자가 인증되어야 함을 의미합니다.
+# 예를 들어, 인증된 사용자만 Todo 목록을 조회하거나, 새로운 Todo를 생성할 수 있도록 제한할 수 있습니다.
 from rest_framework import viewsets
 
 class TodoViewSet(viewsets.ModelViewSet):
+    #pagination
+    pagination_class = CustomPageNumberPagination  # 커스텀 페이지네이션 클래스 설정
+
+    #예를 들어, 특정 사용자의 Todo만 가져오고 싶다면 (인증 또는 권한)
+    #인증
+    authentication_classes = []  # 인증 클래스 설정 (예: SessionAuthentication, TokenAuthentication 등)
+    #권한
+    permission_classes = [AllowAny]  # 권한 클래스 설정 (예: IsAuthenticated, IsAdminUser 등)
+    # 이 설정은 해당 API에 접근하기 위해 사용자가 인증되어야 함을 의미
+    # 예를 들어, 인증된 사용자만 Todo 목록을 조회하거나, 새로운 Todo를 생성할 수 있도록 제한할 수 있습니다.
+    # 만약 인증이 필요 없는 API를 만들고 싶다면, permission_classes를 []
+    # permission_classes = []로 설정하면 인증이 필요 없는 API를 만들 수 있습니다.  
+
+    #이미지
+    parser_classes = [MultiPartParser, FormParser]  # 파일 업로드를 위한 파서 클래스 (파일 업로드가 필요한 경우에만 사용) parser(파서)**는 어떤 데이터를 읽고 → 해석해서 → 구조화된 정보로 바꾸는 도구입니다.
+    # MultiPartParser는 파일 업로드를 처리할 때 사용되는 파서입니다.
+    # FormParser는 일반 폼 데이터를 처리할 때 사용됩니다.
+
+    #   queryset = Todo.objects.all().order_by("-created_at") 를 아래처럼 작성 가능
+    def get_queryset(self):
+        qs = Todo.objects.all().order_by("-created_at") 
+        return qs # 전체 Todo 목록을 가져오는 쿼리셋
+    serializer_class = TodoSerializer
+
     # queryset = Todo.objects.all().order_by("-created_at")  # 전체 Todo 목록을 가져오는 쿼리셋 // 만약 순서를 바꾸고 싶다면 queryset = Todo.objects.all().order_by('name') 처럼 쿼리셋을 수정할 수 있습니다.
     # queryset은 데이터베이스에서 가져올 데이터를 정의하는 부분입니다.
     # 예를 들어, queryset = Todo.objects.filter(complete=False) 는 완료되지 않은 Todo 항목만 가져오는 쿼리셋을 정의합니다. 
@@ -237,24 +280,15 @@ class TodoViewSet(viewsets.ModelViewSet):
     # 1. 재사용을 위해 2. 클래스 기반 뷰(CBV)에서 권장되는 방식 (오바라이딩 해서 동적 쿼리) 3. 가독성 주석 설명
     #방법은 아래 def get_queryset(self): 메소드를 오버라이드하여 쿼리셋을 정의하는 것입니다.
 
-    #   queryset = Todo.objects.all().order_by("-created_at") 를 아래처럼 작성 가능
-    def get_queryset(self):
-        # 예를 들어, 특정 사용자의 Todo만 가져오고 싶다면
-        qs = Todo.objects.all().order_by("-created_at") 
-        return qs # 전체 Todo 목록을 가져오는 쿼리셋
-    serializer_class = TodoSerializer
 
-
-    #     예를 들어, 특정 사용자의 Todo만 가져오고 싶다면 (인증 또는 권한)
-    #인증
-    #권한
-    
+    # 예를 들어, 특정 사용자의 Todo만 가져오고 싶다면
     #     user = self.request.user  # 현재 요청한 사용자
     #     return Todo.objects.filter(user=user)  # 해당 사용자의 Todo만 가져오는 queryset
     # # get_queryset 메소드를 오버라이드하여, 요청한 사용자에 따라 다른 queryset을 반환할 수 있습니다.
     # # 예를 들어, 특정 사용자의 Todo만 가져오고 싶다면, self.request.user를 사용하여 현재 요청한 사용자를 가져오고, 해당                     
     # # 사용자의 Todo만 가져오는 queryset을 반환할 수 있습니다.
     # # 이 메소드는 viewset이 호출될 때마다 실행되며, 요청에 따라 동적으로 queryset을 변경할 수 있습니다.
+
 
 
 
@@ -276,3 +310,5 @@ class CustomLogoutApi(APIView):
         # axios.post('/api/custom-logout/')
         # 또는 fetch('/api/custom-logout/', { method: 'POST' })
         # 와 같이 요청을 보낼 수 있습니다.
+
+
