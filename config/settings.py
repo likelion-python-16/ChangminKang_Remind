@@ -72,9 +72,6 @@ TEMPLATES = [
     },
 ]
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static"
-]
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -131,3 +128,15 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
+# Authentication settings
+LOGIN_REDIRECT_URL = "todo_List"  # 로그인 후 리다이렉트할 URL 설정
+LOGOUT_REDIRECT_URL = "todo_List"  # 로그아웃 후 리다이렉트할 URL 설정
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "todo.pagination.CustomPageNumberPagination", # DRF에서 사용할 기본 페이지네이션 클래스를 지정합니다. 이 예시에서는 todo/pagination.py에 있는 CustomPageNumberPagination을 사용합니다.
+    "PAGE_SIZE": 5, # 	PageNumberPagination 또는 이를 상속한 커스텀 페이지네이션 클래스에서 1페이지에 몇 개의 데이터를 보여줄지 설정
+}

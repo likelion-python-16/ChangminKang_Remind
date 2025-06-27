@@ -48,7 +48,7 @@ function getTodoId() {
 function loadTodoIntoForm(pk){
     // 데이터를 호출 (axios 를 통한 get 요청)
     axiosInstance
-    .get(`/api/retrieve/${pk}/`) // URL에서 pk를 이용하여 todo 데이터를 가져옴 // 앤드포인트 : URL 주소 호출 (/api/update/{pk}/) // pk는 todo 항목의 고유 ID
+    .get(`/viewsets/view/${pk}/`) // URL에서 pk를 이용하여 todo 데이터를 가져옴 // 앤드포인트 : URL 주소 호출 (/api/update/{pk}/) // pk는 todo 항목의 고유 ID
     // 템플릿 리터럴(백틱 + ${})을 사용하면 변수를 문자열 중간에 자연스럽게 넣을 수 있어서 동적 URL 만들 때 매우 유용
     // retrieve는 특정 todo 항목을 가져오는 API 엔드포인트로, pk를 통해 해당 항목을 식별합니다.
     .then(res => { //서버응답을 받아오는 매개변수 // res는 서버에서 받아온 전체 응답(Response) 객체
@@ -87,7 +87,7 @@ function handleUpdate(pk) {
     
     // 데이터를 호출
     axiosInstance
-      .patch(`/api/update/${pk}/`, payload) // PATCH 요청을 통해 todo 업데이트
+      .patch(`/viewsets/view/${pk}/`, payload) // PATCH 요청을 통해 todo 업데이트
       .then(() => redirectToDetail(pk)) // 성공 시 상세 페이지로 리다이렉트 (서버에 보내는 부분으로 res 가 아닌 ()을 작성)
       .catch(err => {
         console.error("업데이트 실패", err); // 에러 로그 출력

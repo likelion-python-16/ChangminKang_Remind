@@ -17,6 +17,7 @@
   {% endfor %} -->
 
 <button class="todoCreate" id = "createBtn"> Todo 등록하기</button>
+<div class="pagination"></div> <!-- 페이지네이션을 표시할 영역입니다. 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다. (3-4)-->
 
 <!-- <script> 
 // 역할: 웹페이지가 완전히 로드되었을 때 실행됩니다.
@@ -49,14 +50,15 @@ document.addEventListener("DOMContentLoaded", init);
 // 2. UI 이벤트 / 사용자 인터페이스와 상호작용하는 이벤트를 처리합니다. // 초기화: UI 이벤트 연결 및 첫 페이지 Todo 목록 로드
 function init() {
     UIEvents(); // 사용자 인터페이스와 상호작용하는 이벤트를 초기화합니다.  ➜ “버튼 클릭, 입력창 등 사용자 인터페이스에 필요한 이벤트 설정을 시작해!” (2-1)
-    loadTodoList(); // todo 목록을 불러옵니다. 데이터가 10개 이상일 때는 페이지네이션을 고려해야 합니다. 페이지네이션을 위해서는 개별 함수가 필요
-}
+    loadTodoList(1); // todo 목록을 불러옵니다. 데이터가 10개 이상일 때는 페이지네이션을 고려해야 합니다. 페이지네이션을 위해서는 개별 함수가 필요
+    // loadTodoList(1); // 첫 페이지의 todo 목록을 불러옵니다. (2-2) // 페이지네이션을 고려하여 첫 페이지를 불러옵니다. // 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다.
+    // 아무런 페이지 번호를 주지 않으면 일반적으로 page=1이 디폴트입니다.즉, loadTodoList()에서 페이지 번호를 넘기지 않으면 기본값으로 1번 페이지가 호출되도록 처리해놓았다는 뜻일 수 있습니다.
+  }
 
 //2-1. UI 이벤트 바인딩: "Todo 등록하기" 버튼 클릭 시 등록 페이지로 이동
 function UIEvents() {
     // 1. todo 등록 버튼 클릭 이벤트
-    document.getElementById("createBtn")
-    .addEventListener("click", onCreateClick);
+    document.getElementById("createBtn").addEventListener("click", onCreateClick);
     // "createBtn"이라는 ID를 가진 버튼을 클릭했을 때 onCreateClick 함수를 실행합니다. //
 }
 //2-1-1. 등록 버튼 클릭 시 /todo/create/로 이동
@@ -70,11 +72,12 @@ function onCreateClick() {
 // 지정한 페이지 번호의 Todo 목록을 서버에서 받아와서 화면에 넣어준다. 
 
 //3. 서버에서 Todo 목록 불러오기
-function loadTodoList(){// 페이지네이션을 고려하여 페이지 번호를 매개변수로 받습니다.
-  fetchTodoData() //fetchTodoData()라는 함수에 page 값을 넣어서 서버에 데이터 요청을 하는 거예요. (3-1)
+function loadTodoList(currentPage){// 페이지네이션을 고려하여 페이지 번호를 매개변수로 받습니다.
+  fetchTodoData(currentPage) //fetchTodoData()라는 함수에 page 값을 넣어서 서버에 데이터 요청을 하는 거예요. (3-1)
   .then(data => { // data를 받아서 중괄호에 넣어서 코드 실행해라    //받아온 데이터에서 실제 todo 항목만 꺼냄
     const todos = extractTodoArray(data); // 서버에서 받아온 데이터 중 todo 항목만 추출한 배열입니다. (constant) 상수라서 다른 값으로 바꿀 수 없게 만듬 (변수 = [] for문 돌려서 빈그릇에 넣는 것과 비슷) (3-2)
     renderTodoList(todos); // 꺼낸 todo 항목을 화면에 보여주는 함수 호출 // todos는 서버에서 받아온 데이터 중 todo 항목만 추출한 배열입니다. (3-3)
+    renderPagination(data, currentPage); // 페이지네이션을 표시하는 함수 호출 // data는 서버에서 받아온 전체 데이터입니다. (3-4)
     // renderPagination(data, page); // 3-4. 페이지네이션 표시
   })
   .catch(err => console.error("리스트 로드 실패", err));
@@ -82,12 +85,15 @@ function loadTodoList(){// 페이지네이션을 고려하여 페이지 번호�
 
 // 3-1 axios를 사용하여 서버에서 todo 데이터를 가져오는 함수
 // 페이지 번호를 매개변수로 받아서 해당 페이지의 데이터를 요청합니다.
-function fetchTodoData() {
-  return axiosInstance.get(`/api/list/`).then(response => response.data);// cdn.jsdelivr.net/npm/axios/dist/axios.min.js를 통해 불러온 axios 라이브러리 인스턴스를 사용합니다. // return을 통해 임시저장하여 추후에 사용할 수 있게 합니다.
-     // 페이지 번호를 쿼리 파라미터로 전달하여 해당 페이지의 데이터를 요청합니다. // axiosInstance를 사용하여 GET 요청을 보냅니다. 이 인스턴스는 미리 설정된 기본 URL과 헤더를 가지고 있습니다.
+function fetchTodoData(currentPage) {
+  return axiosInstance.get(`/viewsets/view/`).then(response => response.data);
+  // cdn.jsdelivr.net/npm/axios/dist/axios.min.js를 통해 불러온 axios 라이브러리 인스턴스를 사용합니다. // return을 통해 임시저장하여 추후에 사용할 수 있게 합니다.
+    // axiosInstance는 미리 설정된 기본 URL과 헤더를 가지고 있습니다. // 이 인스턴스를 사용하여 GET 요청을 보냅니다. // 이 함수는 서버에서 todo 데이터를 가져와서 반환합니다. // 이 함수는 페이지네이션을 고려하지 않고 전체 데이터를 가져옵니다. // 제너릭 방식으로 데이터를 가져오고 있습니다.  
+    // mixin 개념으로 "/generics/" 만 데이터 수집 가능
+    // 페이지 번호를 쿼리 파라미터로 전달하여 해당 페이지의 데이터를 요청합니다. // axiosInstance를 사용하여 GET 요청을 보냅니다. 이 인스턴스는 미리 설정된 기본 URL과 헤더를 가지고 있습니다.
     // .get(`/todo/generic/list/?page=${page}`) 제너릭 방식
     // .get(`/todo/viewset/view/?page=${page}`) 뷰셋 방식
-     // 응답에서 데이터 부분만 추출
+    // 응답에서 데이터 부분만 추출
 }
 
 //3-2. 서버에서 받은 데이터에서 todo 항목만 추출하는 함수 (API 응답 형식에 따라 Todo 배열 추출)
@@ -132,7 +138,7 @@ function createTodoElement(todo) {
 
   // 완료된 항목이면 밑줄 적용 ".todo-item.completed {}" 함수를 CSS로 정의하여 스타일을 적용합니다.
   if (todo.complete) {
-    div.classList.add("completed"); // 완료된 항목에는 "completed" 클래스를 추가합니다.(".todo-item.completed {}"로 스타일로 넘어갈 수 있음) // 완료된 항목을 시각적으로 구분하기 위해 스타일을 적용합니다.
+    div.classList.add("completed"); // 완료된 항목에는 "completed" 클래스를 추가합니다.("CSS 속 .todo-item.completed {}"로 스타일로 넘어갈 수 있음) // 완료된 항목을 시각적으로 구분하기 위해 스타일을 적용합니다.
     } 
   else {
     div.classList.remove("completed"); // 완료되지 않은 항목에서는 "completed" 클래스를 제거합니다.
@@ -164,7 +170,7 @@ return div; // 생성한 div 요소를 반환합니다. // 이 div는 todo 항�
 
 // 3-3-2. 완료 버튼 클릭 시 todo 항목을 완료 상태로 변경하는 함수
 function toComplete(id){
-  axiosInstance.patch(`api/update/${id}/`,{complete : true}) // axiosInstance를 사용하여 PATCH 요청을 보냅니다. // model에서 complete 필드를 true로 업데이트합니다.
+  axiosInstance.patch(`/viewsets/view/${id}/`,{complete : true}) // axiosInstance를 사용하여 PATCH 요청을 보냅니다. // model에서 complete 필드를 true로 업데이트합니다.
   .then(() => loadTodoList()) // 요청이 성공하면 아무것도 하지 않습니다. (false -> true로 변경되면 서버 전송 -> 화면에 표시(loadTodoList() 함수 호출))
   .catch(err => console.error("완료 처리 실패:", err)); // 요청이 실패하면 에러를 처리합니다.
 }
@@ -175,44 +181,49 @@ function detailView(id) {
     window.location.href = `/todo/detail/${id}/`; // window 객체를 사용하여 브라우저의 현재 URL을 변경합니다. // id는 상세 페이지로 이동할 todo 항목의 고유 ID입니다. // 이 함수는 todo 항목의 상세 정보를 보여주는 페이지로 이동합니다. 
 }
 
+// 3-4. 페이지네이션 표시
+// 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다.
+// 페이지네이션은 사용자가 여러 페이지에 걸쳐 있는 todo 항목을 쉽게 탐색할 수 있도록 도와줍니다.
+// 페이지네이션은 현재 페이지를 기준으로 이전 페이지와 다음 페이지로 이동할 수 있는 버튼을 제공합니다.
+// 페이지네이션은 현재 페이지를 기준으로 전체 페이지 수를 표시합니다.
+// 페이지네이션은 현재 페이지를 강조 표시하여 사용자가 현재 위치를 쉽게 파악할 수 있도록 합니다.
+// 페이지네이션은 사용자가 특정 페이지  로 직접 이동할 수 있는 버튼을 제공합니다.
+// 페이지네이션은 사용자가 페이지를 쉽게 탐색할 수 있도록 도와줍니다.
+// 3-4. 페이지네이션 구성 (← 이전, 1 2 3, → 다음)
+function renderPagination(data, currentPage) { // data는 서버에서 받아온 전체 데이터입니다. // currentPage는 현재 페이지 번호입니다. // 페이지네이션을 표시하는 함수입니다. // data.page_count는 전체 페이지 수를 나타냅니다. // currentPage는 현재 페이지 번호를 나타냅니다.
+    const wrapper = document.querySelector('.pagination'); // 페이지네이션을 표시할 영역을 선택합니다. // .pagination 클래스를 가진 요소를 선택합니다. // 페이지네이션은 현재 페이지를 기준으로 전체 페이지 수를 표시합니다.
+    wrapper.innerHTML = '';
 
+    const totalPages = data.page_count; // 전체 페이지 수를 가져옵니다. // data.page_count는 서버에서 받은 데이터의 전체 페이지 수입니다. // 페이지네이션을 표시하기 위해 전체 페이지 수를 계산합니다.
 
+     // 이전 페이지 버튼 (<)
+    const prevBtn = document.createElement('button');
+    prevBtn.innerText = '‹'; //<button> < </button> 과 같다
+    prevBtn.disabled = !data.previous; // 이전 페이지가 없으면 버튼을 비활성화합니다. // data.previous는 이전 페이지가 있는지 여부를 나타냅니다.
+    prevBtn.addEventListener('click', () => loadTodoList(currentPage - 1)); // 이전 페이지 버튼 클릭 시 현재 페이지에서 1 (위에 1을 해서 디폴트 값을 지정) 을 빼서 이전 페이지를 로드합니다. // 현재 페이지에서 1을 빼서 이전 페이지로 이동합니다.
+    wrapper.appendChild(prevBtn);
 
-// // 3-4. 페이지네이션 구성 (← 이전, 1 2 3, → 다음)
-// function renderPagination(data, currentPage) {
-//     const wrapper = document.querySelector('.pagination');
-//     wrapper.innerHTML = '';
+    // 개별 페이지 버튼들 생성 (1,2,3,4)
+    for (let i = 1; i <= totalPages; i++) { //for ( 초기값; 조건; 증감소){if(){}} ) // let은 블록 스코프 변수를 선언하는 키워드입니다. (let은 **변하는 값(=변수)**을 만들 때 사용하는 문법입니다.)// i는 페이지 번호를 나타냅니다. // totalPages는 전체 페이지 수를 나타냅니다.
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        if (i === currentPage) { //엄격한비교
+            btn.disabled = true; // 현재 페이지와 일치하는 버튼은 비활성화합니다. // 현재 페이지를 강조 표시하여 사용자가 현재 위치를 쉽게 파악할 수 있도록 합니다.
+            btn.classList.add('active');  // CSS로 .active 스타일 지정
+        }
+        btn.addEventListener('click', () => loadTodoList(i)); // 페이지 번호 버튼 클릭 시 해당 페이지를 로드합니다. // i는 현재 페이지 번호입니다. // loadTodoList(i) 함수를 호출하여 해당 페이지의 todo 목록을 불러옵니다.
+        wrapper.appendChild(btn);
+    }
 
-//     const totalPages = data.page_count;
+    // 다음 페이지 버튼(>)
+    const nextBtn = document.createElement('button');
+    nextBtn.innerText = '›';
+    nextBtn.disabled = !data.next;
+    nextBtn.addEventListener('click', () => loadTodoList(currentPage + 1));
+    wrapper.appendChild(nextBtn);
+}
 
-//      // 이전 페이지 버튼
-//     const prevBtn = document.createElement('button');
-//     prevBtn.innerText = '‹';
-//     prevBtn.disabled = !data.previous;
-//     prevBtn.addEventListener('click', () => loadTodoList(currentPage - 1));
-//     wrapper.appendChild(prevBtn);
-
-//     // 개별 페이지 버튼들 생성
-//     for (let i = 1; i <= totalPages; i++) {
-//         const btn = document.createElement('button');
-//         btn.innerText = i;
-//         if (i === currentPage) { //엄격한비교
-//             btn.disabled = true;
-//             btn.classList.add('active');  // CSS로 .active 스타일 지정
-//         }
-//         btn.addEventListener('click', () => loadTodoList(i));
-//         wrapper.appendChild(btn);
-//     }
-
-//     // 다음 페이지 버튼
-//     const nextBtn = document.createElement('button');
-//     nextBtn.innerText = '›';
-//     nextBtn.disabled = !data.next;
-//     nextBtn.addEventListener('click', () => loadTodoList(currentPage + 1));
-//     wrapper.appendChild(nextBtn);
-// }
-
-// // 3-5. 날짜/시간을 한국 시간대의 문자열로 변환하는 함수
+// // 3-5. 날짜/시간을 한국 시간대의 문자열로 변환하는 함수 () --> utils.js로 분리했기에 주석
 // function datetimeToString(datetime){ // datetime을 한국 시간대의 문자열로 변환하는 함수
 //     if (!datetime) return "-"; // datetime이 없으면 "-"를 반환합니다.
 //     const date = new Date(datetime); // datetime 문자열을 Date 객체로 변환합니다.
