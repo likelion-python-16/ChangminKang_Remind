@@ -3,6 +3,14 @@
 {% block content %}
 
 {% if user.is_authenticated %}
+  {# --- 검색바 추가 ---#}
+  <div class = 'search-bar' >
+    <input type="text" id="searchInput" placeholder="검색어를 입력하세요.">
+    <button id="searchBtn">검색</button>
+
+  </div>
+  {# --- 검색바 종료 ---#}
+
   <div class="todocontainer"></div>
   <!-- {% for todo in todos %}
     <div class = "todo-item">
@@ -49,6 +57,7 @@
 <script>  
 //현재 페이지를 기억하는 전역변수
 let currentPage = 1; // 현재 페이지를 기억하는 전역 변수입니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // 초기값은 1로 설정합니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // 페이지네이션은 사용자가 여러 페이지에 걸쳐 있는 todo 항목을 쉽게 탐색할 수 있도록 도와줍니다.
+let currentSearch = ""; // 현재 검색어를 기억하는 전역 변수입니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // 초기값은 빈 문자열로 설정합니다. // 페이지네이션은 사용자가 여러 페이지에 걸쳐 있는 todo 항목을 쉽게 탐색할 수 있도록 도와줍니다.
 
 // 1. 문서가 완전히 로드되면 초기화 함수 init()을 실행합니다. //
 document.addEventListener("DOMContentLoaded", init); 
@@ -67,6 +76,18 @@ function UIEvents() {
     // 1. todo 등록 버튼 클릭 이벤트
     document.getElementById("createBtn").addEventListener("click", onCreateClick);
     // "createBtn"이라는 ID를 가진 버튼을 클릭했을 때 onCreateClick 함수를 실행합니다. //
+
+    // 2. 검색 버튼 클릭 이벤트
+    document.getElementById("searchBtn")
+     .addEventListener("click", ()=>{
+       currentSearch = document.getElementById("searchInput").value.trim(); // 검색어를 입력받아 앞뒤 공백을 제거한 후 currentSearch 변수에 저장합니다. // 검색어를 입력받아 해당 검색어로 Todo 목록을 필터링하는 기능을 수행합니다.
+       loadTodoList(1); // 검색어를 입력받아 해당 검색어로 Todo 목록을 필터링하는 기능을 수행합니다. // 페이지네이션을 고려하여 첫 페이지를 불러옵니다. // 현재 페이지를 1로 설정하고, 해당 페이지의 Todo 목록을 불러옵니다.
+    }); // "searchBtn"이라는 ID를 가진 버튼을 클릭했을 때 onSearchClick 함수를 실행합니다. // 검색 버튼 클릭 시 onSearchClick 함수를 실행합니다. // 이 함수는 검색어를 입력받아 해당 검색어로 Todo 목록을 필터링하는 기능을 수행합니다.
+
+    // 스텝 1 input 값 읽어오기 
+    // 스텝 2 앞뒤 공백을 제거한 입력값을 변수에 저장
+    // 스텝 3 데이터 호출 (재요청)
+    
 }
 //2-1-1. 등록 버튼 클릭 시 /todo/create/로 이동
 function onCreateClick() {
@@ -83,22 +104,31 @@ function loadTodoList(page){// 페이지네이션을 고려하여 페이지 번�
   currentPage = page; // 현재 페이지를 전역 변수에 저장합니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // currentPage는 현재 페이지 번호를 나타냅니다. // 이 변수는 페이지네이션을 고려하여 현재 페이지를 관리합니다.
   // 서버에서 Todo 데이터를 가져옵니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // 페이지네이션은 사용자가 여러 페이지에 걸쳐 있는 todo 항목을 쉽게 탐색할 수 있도록 도와줍니다.
 // 페이지네이션은 현재 페이지를 기준으로 이전 페이지와 다음 페이지로 이동할 수 있는 버튼을 제공합니다. 이거 안하면 완료 버튼 누름 다시 1페이지로 돌아감
-  fetchTodoData(page) //fetchTodoData()라는 함수에 page 값을 넣어서 서버에 데이터 요청을 하는 거예요. (3-1)
+  fetchTodoData(currentPage, currentSearch) //fetchTodoData()라는 함수에 page 값을 넣어서 서버에 데이터 요청을 하는 거예요. (3-1)   // fetchTodoData(page) // 페이지네이션을 고려하여 현재 페이지를 관리합니다
+  // currentPage는 현재페이지에 내용을 올리겠단 뜻.//  currentSearch는 현재 검색어를 나타냅니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다.
   .then(data => { // data를 받아서 중괄호에 넣어서 코드 실행해라    //받아온 데이터에서 실제 todo 항목만 꺼냄
     const todos = extractTodoArray(data); // 서버에서 받아온 데이터 중 todo 항목만 추출한 배열입니다. (constant) 상수라서 다른 값으로 바꿀 수 없게 만듬 (변수 = [] for문 돌려서 빈그릇에 넣는 것과 비슷) (3-2)
     renderTodoList(todos); // 꺼낸 todo 항목을 화면에 보여주는 함수 호출 // todos는 서버에서 받아온 데이터 중 todo 항목만 추출한 배열입니다. (3-3)
     renderPagination(data, page); // 페이지네이션을 표시하는 함수 호출 // data는 서버에서 받아온 전체 데이터입니다. (3-4)
     // renderPagination(data, page); // 3-4. 페이지네이션 표시
     console.log("리스트 로드 성공", data); // 데이터 로드 성공 시 콘솔에 메시지 출력
-    console.log("현재 페이지:", currentPage); // 현재 페이지 번호를 콘솔에 출력합니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다.
+    console.log("현재 페이지:", data.data); // 현재 페이지의 데이터를 콘솔에 출력합니다. // data는 서버에서 받아온 전체 데이터입니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다.
   })
   .catch(err => console.error("리스트 로드 실패", err));
 }
 
 // 3-1 axios를 사용하여 서버에서 todo 데이터를 가져오는 함수
 // 페이지 번호를 매개변수로 받아서 해당 페이지의 데이터를 요청합니다.
-function fetchTodoData(page) {
-  return axiosInstance.get(`/viewsets/view/?page=${currentPage}`).then(response => response.data);
+function fetchTodoData(page, search = ""){
+  return axiosInstance
+  // .get(`/viewsets/view/?page=${currentPage}&search = `) // 페이지네이션 데이터 요청 (?는 쿼리를 의미하고 요청하는 걸 의미) * 아래 내용과 같음
+  .get ('/viewsets/view/', {
+    params: {page,search} // 페이지 번호와 검색어를 쿼리 파라미터로 전달합니다.(url 쿼리스트링을 자동으로 구성해주는 옵션) // page는 현재 페이지 번호를 나타냅니다. // search는 현재 검색어를 나타냅니다. // 페이지네이션을 고려하여 현재 페이지를 관리합니다. // 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다.
+  })
+  .then(response => {
+    console.log("응답데이터", response.data); // 응답에서 데이터 부분만 추출합니다. // 서버에서 받은 데이터를 콘솔에 출력합니다. // 응답 데이터는 페이지네이션을 고려하여 전체 데이터를 포함하고 있습니다. // 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다.
+    return response.data; // 응답에서 데이터 부분만 추출하여 반환합니다. // 이 데이터는 페이지네이션을 고려하여 전체 데이터를 포함하고 있습니다. // 페이지네이션은 서버에서 받은 데이터의 페이지 수에 따라 동적으로 생성됩니다. // axiosInstance는 미리 설정된 기본 URL과 헤더를 가지고 있습니다. // 이 인스턴스를 사용하여 GET 요청을 보냅니다. // 이 함수는 서버에서 todo 데이터를 가져와서 반환합니다. // 이 함수는 페이지네이션을 고려하지 않고 전체 데이터를 가져옵니다. // 제너릭 방식으로 데이터를 가져오고 있습니다.
+});
   // cdn.jsdelivr.net/npm/axios/dist/axios.min.js를 통해 불러온 axios 라이브러리 인스턴스를 사용합니다. // return을 통해 임시저장하여 추후에 사용할 수 있게 합니다.
     // axiosInstance는 미리 설정된 기본 URL과 헤더를 가지고 있습니다. // 이 인스턴스를 사용하여 GET 요청을 보냅니다. // 이 함수는 서버에서 todo 데이터를 가져와서 반환합니다. // 이 함수는 페이지네이션을 고려하지 않고 전체 데이터를 가져옵니다. // 제너릭 방식으로 데이터를 가져오고 있습니다.  
     // mixin 개념으로 "/generics/" 만 데이터 수집 가능

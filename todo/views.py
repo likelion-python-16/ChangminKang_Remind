@@ -60,6 +60,7 @@ class TodoUpdateViews(UpdateView):
     # 따라서, TodoUpdateViews는 UpdateView로 변경하는 것이 좋습니다.
     # UpdateView를 사용하면, 기존 객체를 수정할 때 자동으로 해당 객체를 가져와서 수정할 수 있습니다.
 
+
 # #삭제
 # class TodoDeleteViews(DeleteView):
 #     model = Todo
@@ -70,3 +71,5 @@ class TodoUpdateViews(UpdateView):
 #     # 이 클래스는 객체를 삭제할 때 자동으로 해당 객체를 가져와서 삭제할 수 있습니다.
 #     # 따라서, TodoDeleteViews는 DeleteView로 변경하는 것이 좋습니다.
 #     # DeleteView를 사용하면, 기존 객체를 삭제할 때 자동으로 해당 객체를 가져와서 삭제할 수 있습니다.
+
+

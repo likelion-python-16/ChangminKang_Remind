@@ -52,6 +52,7 @@
 # 사용 예 :	블로그 글 작성, 로그인 폼 등	// 프론트엔드와 분리된 API 서버
 
 from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from .models import Todo
 
 class TodoSerializer(ModelSerializer):
@@ -60,3 +61,11 @@ class TodoSerializer(ModelSerializer):
         # fields = ["name", "description", "complete", "exp", "completed_at", "created_at", "updated_at"]
         # exclude = ["completed_at", "exp",]
         fields = "__all__" #모델 값 전체를 데려올 수 있음 위처럼 번거롭게 할 필요가 없음
+        # read_only_fields = ("completed_at",)
+
+#     class TodoSerializer(serializers.ModelSerializer):
+#         completed_at = serializers.DateTimeField(
+#         required=False,
+#         allow_null=True,
+#         input_formats=['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%S.%fZ', 'iso-8601'],
+#     )

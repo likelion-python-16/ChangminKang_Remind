@@ -9,7 +9,9 @@ from rest_framework.routers import DefaultRouter  # DRF의 DefaultRouter를 사�
 from .api_views import TodoViewSet  # api_views.py에서 TodoViewSet을 가져옵니다.
 #viewsets (api_views.py 작성 전 urls.py 작성 필수)
 router = DefaultRouter()  # DRF의 DefaultRouter를 사용하여 viewsets를 위한 라우터 생성
-router.register("view", TodoViewSet, basename='todo')  # TodoViewSet을 등록합니다. basename은 URL의 접두사 역할을 합니다.
+router.register(r"view", TodoViewSet, basename='todo')  # TodoViewSet을 등록합니다. basename은 URL의 접두사 역할을 합니다. r"view"는 URL의 접두사로 사용됩니다. 이 URL은 /todo/viewsets/view/로 매핑됩니다. view가 마지막이다 더이상 없다. view/는 뒤에 더 있을 수도 있다.
+
+app_name = "todo"  # 앱 이름을 설정합니다. 이 이름은 URL 네임스페이스로 사용됩니다.
 
 urlpatterns = [
     # path("list/", views.todo_list, name = "todo_List" ), #list 목록보기 / name은 프로젝트 url 속 redirect name (함수형)

@@ -2,12 +2,11 @@
     <div class = "header">
       <h1>Todo List</h1>
       <div>
-        <a href="{% url 'todo_List' %}">목록</a> 
+        <a href="{% url 'todo:todo_List' %}">목록</a> 
         {% if user.is_authenticated %}
-        <!-- <button><a href="{% url 'custom-logout' %}">로그아웃</a></button> (apiview 방식으로 로그아웃 구현) -->
          <button id="logoutBtn">로그아웃</button> <!-- 로그인 하지 않는다면 화면 미송출 -->
         {% else %}
-        <a href="{% url 'rest_framework:login' %}?next={% url 'todo_List' %}">로그인</a>
+        <a href="{% url 'rest_framework:login' %}?next={% url 'todo:todo_List' %}">로그인</a>
         {% endif %}
       </div>
     </div>
@@ -21,7 +20,7 @@
       axiosInstance.get("/api/custom-logout/")
         .then(()=> {
           // 성공적으로 로그아웃 처리됨
-          window.location.href = "{% url 'todo_List' %}"})
+          window.location.href = "{% url 'todo:todo_List' %}"})
         .catch(err => {
           console.error("로그아웃 실패:", err);
           alert("로그아웃 실패.");

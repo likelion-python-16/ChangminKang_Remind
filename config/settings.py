@@ -32,13 +32,22 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+# FLY 배포용 Allowed Hosts 설정
+# APP_NAME = os.environ.get("FLY_APP_NAME")
+# # ALLOWED_HOSTS =  [f"{APP_NAME}.fly.dev", "localhost", "127.0.0.1"]
+# ALLOWED_HOSTS = [f"{APP_NAME}.fly.dev", "todolist-drf-polished-smoke-1651.fly.dev",
+#                 "localhost",
+#                 "127.0.0.1",  ]
 
-
-# Application definition
+# CSRF_TRUSTED_ORIGINS = [
+#     f"https://{APP_NAME}.fly.dev",
+#     "https://todolist-drf-polished-smoke-1651.fly.dev",  # ← 본인 앱 도메인
+# ]
+# # Application definition
 
 CUSTOM_APPS = [
   'todo',  # todo 앱을 추가합니다. 이 앱은 todo 관련 기능을 구현합니다.
+  "interaction",
 ]
 
 THIRD_PARTY_APPS = [
@@ -143,6 +152,9 @@ STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
 
+# ✅ 정적 파일을 모아둘 디렉토리 (배포 시 collectstatic 용도)
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 REST_FRAMEWORK = {
     # 페이지네이션 클래스 : 커스텀 지정
     "DEFAULT_PAGINATION_CLASS": "todo.pagination.CustomPageNumberPagination", # DRF에서 사용할 기본 페이지네이션 클래스를 지정합니다. 이 예시에서는 todo/pagination.py에 있는 CustomPageNumberPagination을 사용합니다.
@@ -161,7 +173,7 @@ REST_FRAMEWORK = {
     ]
 }
 # Authentication settings
-LOGIN_REDIRECT_URL = "todo_List"  # 로그인 후 리다이렉트할 URL 설정
+LOGIN_REDIRECT_URL = '/todo/list/'  # 로그인 후 리다이렉트할 URL 설정
 LOGOUT_REDIRECT_URL = "/api-auth/login/"  # 로그아웃 후 리다이렉트할 URL 설정
 
 # 이미지를 올리기 위한 설정

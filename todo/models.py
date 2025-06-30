@@ -17,9 +17,16 @@ class Todo(models.Model):
     
     # 기본 동작 보안: 완성된 날짜 (completed_at) 값에 따라 자동으로 시간이 처리되게 
 
-def save(self, *args, **kwargs):
-    if self.complete and self.completed_at is None:
-            self.completed_at = timezone.now()  # 완료되면 현재 시간으로 설정
-    if not self.complete and self.completed_at is not None: # 완료되지 않은 상태로 변경되면 completed_at을 None으로 설정
-            self.completed_at = None
-    super().save(*args, **kwargs)  # 부모 클래스의 save 메서드를 호출하여 저장 작업을 수행합니다.
+# def save(self, *args, **kwargs):
+#     if self.complete and self.completed_at is None: # 완료 상태로 변경되면 completed_at을 현재 시간으로 설정
+#             self.completed_at = timezone.now()  # 완료되면 현재 시간으로 설정
+#     if not self.complete and self.completed_at is not None: # 완료되지 않은 상태로 변경되면 completed_at을 None으로 설정
+#             self.completed_at = None
+#     super().save(*args, **kwargs)  # 부모 클래스의 save 메서드를 호출하여 저장 작업을 수행합니다.
+
+    def save(self, *args, **kwargs):
+        if self.complete and self.completed_at is None:
+                self.completed_at = timezone.now()  # 완료되면 현재 시간으로 설정
+        if not self.complete and self.completed_at is not None: # 완료되지 않은 상태로 변경되면 completed_at을 None으로 설정
+                self.completed_at = None
+        super().save(*args, **kwargs)  # 부모 클래스의 save 메서드를 호출하여 저장 작업을 수행합니다.

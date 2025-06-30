@@ -4,6 +4,8 @@ from .serializers import TodoSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework import filters # 필터링 백엔드 설정 (예: DjangoFilterBackend, SearchFilter 등) // 필터링 백엔드는 API 요청에 대한 필터링을 처리하는 클래스입니다.
+
 #이미지 추가
 from rest_framework.parsers import MultiPartParser, FormParser # 파일 업로드를 위한 파서 클래스 (파일 업로드가 필요한 경우에만 사용)
 
@@ -267,6 +269,10 @@ class TodoViewSet(viewsets.ModelViewSet):
     # MultiPartParser는 파일 업로드를 처리할 때 사용되는 파서입니다.
     # FormParser는 일반 폼 데이터를 처리할 때 사용됩니다.
 
+    #검색기능
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name", "description"]  # 필터링 백엔드 설정 (예: DjangoFilterBackend, SearchFilter 등) // 필터링 백엔드는 API 요청에 대한 필터링을 처리하는 클래스입니다.
+
     #   queryset = Todo.objects.all().order_by("-created_at") 를 아래처럼 작성 가능
     def get_queryset(self):
         qs = Todo.objects.all().order_by("-created_at") 
@@ -289,7 +295,14 @@ class TodoViewSet(viewsets.ModelViewSet):
     # # 사용자의 Todo만 가져오는 queryset을 반환할 수 있습니다.
     # # 이 메소드는 viewset이 호출될 때마다 실행되며, 요청에 따라 동적으로 queryset을 변경할 수 있습니다.
 
-
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(serializer.errors)  # 로그에 오류 출력
+            return Response(serializer.errors, status=400)
+        
+        self.perform_create(serializer)
+        return Response(serializer.data, status=201)
 
 
 #로그인 (제공해주는 형식 링크 DRF 제공 링크: https://www.django-rest-framework.org/api-guide/authentication/#sessionauthentication)
@@ -310,5 +323,6 @@ class CustomLogoutApi(APIView):
         # axios.post('/api/custom-logout/')
         # 또는 fetch('/api/custom-logout/', { method: 'POST' })
         # 와 같이 요청을 보낼 수 있습니다.
+
 
 

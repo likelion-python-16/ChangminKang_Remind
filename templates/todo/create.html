@@ -16,10 +16,10 @@
         <label for ="complete">Complete:</label>
         <input type="checkbox" name= "complete" id="complete">
     </div>
-    <div>
+    {% comment %} <div>
         <label for ="completed_at">Completed At:</label>
-        <input type="date" name= "completed_at" id="completed_at"> <!-- 날짜 입력을 위한 input type="date" 사용 -->
-    </div>
+        <input type="datetime-local" name= "completed_at" id="completed_at"> <!-- 날짜 입력을 위한 input type="date" 사용 -->
+    </div> {% endcomment %}
     <div>
         <label for ="image">Images:</label>
         <input type="file" name= "image" id="image"> <!-- 날짜 입력을 위한 input type="date" 사용 -->
@@ -90,56 +90,50 @@ function gatherFormData() {
     const formData = new FormData(); // FormData 객체 생성
 
     // 폼 데이터 수집 함수 : 폼 데이터 수집
-    let expVal = document.getElementById("exp").value; // 경험치 값 가져오기 
-    if(expVal === "") expVal = 0; // 경험치 값이 비어있으면 0으로 설정
+    // let expVal = document.getElementById("exp").value; // 경험치 값 가져오기 
+    // if(expVal === "") expVal = 0; // 경험치 값이 비어있으면 0으로 설정
+    
+    const expInput = document.getElementById("exp"); // 경험치 입력 필드 가져오기
+    const expVal = expInput && expInput.value.trim() !== "" ? Number(expInput.value) : 0; // 경험치 값 가져오기
+    // expVal이 비어있으면 0으로 설정, 아니면 숫자로 변환
+    // Number(expVal) : 문자열을 숫자로 변환, 만약 expVal이 비어있으면 0으로 설정
+    //trim() : 문자열의 앞뒤 공백을 제거하는 메서드
 
-    //날짜 처리
-    const completedAtInput = document.getElementById("completed_at").value; // 완료 여부 값 가져오기
-    const completedAt = completedAtInput ? new Date(completedAtInput).toISOString() : null; // 완료 시간 값 가져오기
-
+    //날짜 처리 (모델에 의해 자동 처리되므로 주석 처리)
+    // const completedAtInput = document.getElementById("completed_at").value; // 완료 여부 값 가져오기
+    // //const completedAt = completedAtInput ? `${completedAtInput}T00:00:00Z`: null;// 완료 시간 값 가져오기// ISO 형식으로 강제 변환 (chatgpt 수정)
+    // const completedAt = completedAtInput ? new Date(completedAtInput).toISOString() : null; // 완료 시간 값 가져오기
+    
     // 텍스트 필드 추가
     formData.append("name", document.getElementById("name").value); // 이름 값 추가
     formData.append("description", document.getElementById("description").value); // 설명 값 추가   
     formData.append("complete", document.getElementById("complete").checked); //   완료 여부 값 추가
-    formData.append("completed_at", completedAt); // 완료 시간 값 추가 (null 또는 ISO 형식 문자열)
+    //formData.append("complete", document.getElementById("complete").checked ? "1" : "0"); //   완료 여부 값 추가
+    //formData.append("completed_at", completedAt); // 완료 시간 값 추가 (null 또는 ISO 형식 문자열)
     formData.append("exp", Number(expVal)); // 경험치 값 추가
 
     //이미지 파일 추가
     const imageInput = document.getElementById("image");
     if (imageInput && imageInput.files.length > 0) { // 이미지 파일이 맞는지 그리고 이미지 파일이 있는지 확인(이미지 개수 >0)
         formData.append("image", imageInput.files[0]); // 첫 번째 파일 추가
-}
+    }
     return formData; // 수집한 폼 데이터를 반환
 }
 
 // 서버에 POST 요청을 보내는 함수
 // axiosInstance를 사용하여 /todo/create/ 엔드포인트에 POST 요청을 보내는 함수
 // payLoad는 gatherformData() 함수에서 수집한 폼 데이터입니다
-function createTodo(payLoad){
-    axiosInstance.post("/viewsets/view/", payLoad) // axiosInstance를 사용하여 /todo/create/ 엔드포인트에 POST 요청을 보냅니다.
-        .then(response => { // 요청이 성공하면 실행되는 콜백 함수 (이동할 페이지 링크)
-            // console.log("Todo created successfully:", response.data); // 성공 메시지 출력
-            window.location.href = "/todo/list/"; // Todo 목록 페이지로 리다이렉트
-        })
-        .catch(error => { // 요청이 실패하면 실행되는 콜백 함수 (에러 경고창)
-            console.error("todo 생성 실패", error);
-            alert("Todo 생성에 실패했습니다. 다시 시도해주세요."); // 에러 메시지 출력
-        });
+
+function createTodo(payload){
+    axiosInstance.post("/viewsets/view/", payload) // 어디로 이동
+    .then(response => {
+        window.location.href = "/todo/list/";
+    })//서버에 데이터를 저장한 후 이동할 페이지 링크
+    .catch(error =>{
+        console.error("todo 생성 실패", error);
+        alert("todo 생성 실패했습니다.");
+    }) // 에러메시 경고창 
 }
-// 아래 내용을 위처럼 정리 가능
-// function onCreateSuccess(){
-//     window.location.href = "/list/"; // Todo 목록 페이지로 리다이렉트
-// }
-
-// function onCreateError(){
-//     console.error("todo 생성 실패", error); // 에러 메시지 출력
-//     alert("Todo 생성에 실패했습니다. 다시 시도해주세요."); // 에러 경고창
-// }
-
-
-
-
-</script>
+</script>    
 
 {% endblock %}
-
