@@ -49,7 +49,7 @@ function getTodoId() {
 function loadTodoDetail(pk){
     // 데이터를 호출 (axios 를 통한 get 요청)
     axiosInstance
-    .get(`/viewsets/view/${pk}/`) // URL에서 pk를 이용하여 todo 데이터를 가져옴 // 앤드포인트 : URL 주소 호출 (/api/detail/{pk}/)
+    .get(`/todo/viewsets/view/${pk}/`) // URL에서 pk를 이용하여 todo 데이터를 가져옴 // 앤드포인트 : URL 주소 호출 (/api/detail/{pk}/)
     .then(res => renderTodoDetail(res.data)) // 성공적으로 데이터를 가져오면 renderTodoDetail 함수 호출 
     .catch(err => console.error("로딩실패",err)); // 에러가 발생하면 콘솔에 에러 출력
 }
@@ -116,7 +116,7 @@ function bindDeleteButton(pk) {
     btn.addEventListener("click", () => {
         if (!confirm("정말로 삭제하시겠습니까?")) return; // 사용자에게 삭제 확인을 묻습니다. // 사용자가 "확인"을 누르면 삭제를 진행합니다. "취소"를 누르면 아무 작업도 하지 않습니다.
    //삭제 요청 보기
-    axiosInstance.delete(`/viewsets/view/${pk}/`) // DELETE 요청을 통해 todo 항목을 삭제합니다.
+    axiosInstance.delete(`/todo/viewsets/view/${pk}/`) // DELETE 요청을 통해 todo 항목을 삭제합니다.
     .then(() => {window.location.href = "/todo/list/";}) // 삭제 후 목록 페이지로 리다이렉트합니다.
     .catch(err => 
     {alert("삭제에 실패했습니다"); 

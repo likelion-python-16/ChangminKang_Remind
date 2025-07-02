@@ -309,7 +309,7 @@ class TodoViewSet(viewsets.ModelViewSet):
 
     #logoutapi (서버에 로그아웃 요청) -> post 방식으로 요청을 보내야 합니다.(Axios, fetch 등으로) // 장고기본 지원 (웹)
 class CustomLogoutApi(APIView):
-    def get(self, request): #상태변화가 일어나는 요청
+    def post(self, request): #상태변화가 일어나는 요청
         # 로그아웃 처리
         from django.contrib.auth import logout
         from django.shortcuts import redirect

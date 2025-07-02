@@ -5,7 +5,6 @@ from django.contrib.auth.models import User  # Django의 기본 User 모델을 �
 # 세가지 모델을 나눠서 만드는 이유는 연결이 아닌 각각 객체로 존재하므로 따로 정리 (좋아요 누른다고 댓글을 달 수도 안 달 수도 있기 때문에) 
 #좋아요 모델 
 class Like(models.Model):
-    pass
     # 공통필드
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # 좋아요를 누른 사용자
     todo = models.ForeignKey(Todo, on_delete=models.CASCADE)  # 좋아요가 눌린 Todo 항목
@@ -44,16 +43,27 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # 댓글 작성 시간 # foreignkey는 다른 모델과의 관계를 나타내는 필드입니다. // 이 필드는 댓글이 작성된 시간을 자동으로 저장합니다. // auto_now_add=True는 객체가 생성될 때 현재 시간을 자동으로 설정합니다. // 이 필드는 댓글이 작성된 시간을 자동으로 저장합니다. // auto_now_add=True는 객체가 생성될 때 현재 시간을 자동으로 설정합니다.
     
     #댓글을 좋아요 누른 유저들을 저장하는 필드 (기사 하나에 여러명이 접근하여 댓글을 달 수 있고, 그 댓글에 여러명이 좋아요를 누를 수 있기 때문에 다대다 관계로 설정합니다.)
-    likes = models.ManyToManyField(User, related_name='liked', blank=True)  # 댓글을 좋아요 누른 사용자들 // ManyToManyField는 다대다 관계를 나타내는 필드입니다. // 이 필드는 댓글을 좋아요 누른 사용자들을 저장합니다. // related_name은 역참조 시 사용할 이름을 지정합니다. // blank=True는 이 필드가 비어있을 수 있음을 의미합니다. // 이 필드는 댓글을 좋아요 누른 사용자들을 저장합니다.
+    likes = models.ManyToManyField(User, through = "CommentLike", related_name='liked_comments', blank=True)  # 댓글을 좋아요 누른 사용자들 // ManyToManyField는 다대다 관계를 나타내는 필드입니다. // 이 필드는 댓글을 좋아요 누른 사용자들을 저장합니다. // related_name은 역참조 시 사용할 이름을 지정합니다. // blank=True는 이 필드가 비어있을 수 있음을 의미합니다. // 이 필드는 댓글을 좋아요 누른 사용자들을 저장합니다.
     # **역참조(reverse access)**는 _반대 방향에서 관계를 조회_하는 것을 의미합니다. 즉, User 모델에서 이 사용자가 어떤 댓글에 좋아요를 눌렀는지를 찾고 싶을 때: user.liked.all() // 여기서 liked는 바로 related_name='liked'에서 지정한 이름입니다.즉, user.liked는 "이 사용자가 좋아요를 누른 댓글 목록"을 의미합니다.
-    
+    # through = "CommentLike"는 중간 모델을 통해 다대다 관계를 설정합니다. // 이 설정은 Comment와 User 사이의 다대다 관계를 관리하기 위해 CommentLike 모델을 사용합니다. // 이 모델은 댓글과 좋아요를 누른 사용자 간의 관계를 저장합니다. 
+
+
     # # 같은 유저가 같은 todo에 댓글을 여러 번 달 수 없게 하고 싶다
     # class Meta:
     #     unique_together = ('user', 'todo')
 
-    # #상황 2. "한 사용자가 같은 댓글에 여러 번 좋아요 못 누르게 하고 싶다"
-    # class Meta:
-    #     unique_together = ('user', 'comment')
-
     def __str__(self):
         return f"{self.user.username} 💬 {self.content[:20]}"
+
+# 누가 어떤 댓글을 언제 좋아요 눌렀는지 저장하는 모델
+class CommentLike(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)  # 좋아요가 눌린 댓글
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # 좋아요를 누른 사용자
+    liked_at = models.DateTimeField(auto_now_add=True)  # 좋아요가 눌린 시간
+    is_like = models.BooleanField(default=True) # 현재 좋아요가 유효한지 여부의 boolean 필드
+
+    class Meta:
+        unique_together = ('user', 'comment')
+    
+    def __str__(self):
+        return f"{self.user.username} ❤️ {self.comment.id}"

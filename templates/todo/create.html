@@ -125,7 +125,7 @@ function gatherFormData() {
 // payLoad는 gatherformData() 함수에서 수집한 폼 데이터입니다
 
 function createTodo(payload){
-    axiosInstance.post("/viewsets/view/", payload) // 어디로 이동
+    axiosInstance.post("/todo/viewsets/view/", payload) // 어디로 이동
     .then(response => {
         window.location.href = "/todo/list/";
     })//서버에 데이터를 저장한 후 이동할 페이지 링크

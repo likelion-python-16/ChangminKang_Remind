@@ -17,7 +17,7 @@
   // click event
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("logoutBtn").addEventListener("click",()=> {
-      axiosInstance.get("/api/custom-logout/")
+      axiosInstance.post("/todo/api/custom-logout/")
         .then(()=> {
           // 성공적으로 로그아웃 처리됨
           window.location.href = "{% url 'todo:todo_List' %}"})
