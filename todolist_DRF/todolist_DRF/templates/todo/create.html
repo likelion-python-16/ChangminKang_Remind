@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="todocontainer">
+    <h2>Create a New Todo</h2>
+    <div>
+        <label for ="name">Name:</label>
+        <input type="text" name="name" id="name">
+    </div>
+    <div>
+        <label for ="description">Description:</label>
+        <textarea name= "description" id="description"></textarea> <!-- 긴글의 경우 textarea 를 쓰고 type 따로 지정 필요 없음 -->
+    </div>
+    <div>
+        <label for ="complete">Complete:</label>
+        <input type="checkbox" name= "complete" id="complete">
+    </div>
+    {% comment %} <div>
+        <label for ="completed_at">Completed At:</label>
+        <input type="datetime-local" name= "completed_at" id="completed_at"> <!-- 날짜 입력을 위한 input type="date" 사용 -->
+    </div> {% endcomment %}
+    <div>
+        <label for ="image">Images:</label>
+        <input type="file" name= "image" id="image"> <!-- 날짜 입력을 위한 input type="date" 사용 -->
+    </div>
+    <div>        
+        <label for ="exp">Experience Points:</label>
+        <input type="number" name= "exp" id="exp" min="0"> <!--음수를 쓸 수 없기에 최소 0을 지정-->
+    </div>
+    <button type="submit" id="todoCreate">Create</button>
+</div>
+
+<script>  
+// 처리해야할 기능 :
+// 문서로드 후 초기화 : 
+document.addEventListener("DOMContentLoaded", init); // document 객체가 완전히 로드되면 init 함수를 실행합니다.
+// 생성버튼 이벤트 바인딩(에시 클릭 이벤트 등을 UI요소와 연결하는 작업을 바인딩이라고 한다.) :
+function init() {
+    bindUIEvents(); // 버튼에 클릭 이벤트 연결
+}
+// UI 이벤트 바인딩 함수 : 예시 클릭, 스크롤, 탭키, 문서로딩
+function bindUIEvents() {
+    const btn = document.getElementById("todoCreate");
+    //방어 코드 : {#{"{% if user.is_auth%} <button 클릭 가능하고 {% else %} <button 클릭 불가능하게 처리하기 : 접근권한 조건문"#}
+    if (!btn) return; // 버튼이 없으면 함수 종료
+    btn.addEventListener("click", onCreateClick); // document.getElementById("todoCreate").addEventListener("click", onCreateClick); // 버튼 클릭 시 onCreateClick 함수 실행
+}
+
+
+// 버튼 클릭시 실행되는 함수 : 데이터 수집 및 전송
+function onCreateClick(){ 
+    // 데이터 수집  
+    const payload = gatherFormData(); // 폼 데이터 수집 함수 호출
+
+    // 서버에 전송
+    createTodo(payload);// 서버에 post 요청 보내기 함수 호출
+}
+
+// function gatherformData() {
+//     // 폼 데이터 수집 함수 : 폼 데이터 수집
+
+// 데이터 평탄화 함수 : 폼 데이터 수집 
+
+//     let expVal = document.getElementById("exp").value; // 경험치 값 가져오기 
+// //모델 객체명 사용 (experience_points = exp) // let vs const : const는 재할당 불가능, let은 재할당 가능
+//     if(expVal==="") expVal = 0; // 경험치 값이 비어있으면 0으로 설정 // == vs === : ==는 값만 비교, ===는 값과 타입을 모두 비교
+//     // python input("0") --> "0" 문자열. 이 경우 "0" == 0 true, "0" === 0 false
+//     // 예상치 못한 자동 변환 때문에 버그가 발생할 가능을 대비하여 ==== 연산자를 사용하여 타입까지 비교하는 것이 좋습니다.
+//     const completedAtInput = document.getElementById("completed_at").value; // 완료 여부 값 가져오기 // 완료시간 수정 불가
+//     // completedAtInput 값이 있으면 -> date 객체로 변환해서 iso 형식 문자열로 만들고 없으면 NULL로 설정해라
+//     const completedAt = completedAtInput ? new Date(completedAtInput.value).toISOString() : null; // 완료 시간 값 가져오기 , new는 클래스(생성자 함수)로부터 객체를 생성하는 키워드 따라서 클래스와 띄어쓰기 필요
+//     // 자바스크립트 삼항연산자 (조건? 참 : 거짓) : completedAtInput.value가 있으면 new Date(completedAtInput.value).toISOString()을 반환하고, 없으면 null을 반환합니다.
+//     return { // platform에 들어오는 input json // 페이지네이션 drf -> 중첩 {키:값{1,2,3}} // 웹크롤링 ai접목 // '' backtick 일때만 f"문자열{변수}" 형태로 쓸때만 ${name: }" 작성 가능
+        
+//         // 수동적 구조 해체방식
+//         // 예시: {name: "todo1", description: "할 일 1", complete: true, completed_at: "2023-10-01T12:00:00Z", expg: 100}
+//         // 자동적 구조 해체방식
+//         // 예시: {name, description, complete, completed_at, expg} //
+//         name: document.getElementById("name").value, // 이름 값 가져오기
+//         description: document.getElementById("description").value, // 설명 값 가져오기 (textarea 사용: 문자형태)
+//         complete: document.getElementById("complete").checked, // 완료 여부 값 가져오기 // 체크박스 사용: true/false 형태
+//         completed_at: completedAt, // 완료 시간 값 가져오기 // 완료 시간 값은 null 또는 ISO 형식 문자열로 설정
+//         expg: Number(expVal) // 경험치 값 가져오기 // 경험치 값은 숫자형태로 설정
+//     };
+// }
+
+function gatherFormData() {
+    // 이미지 처리
+    const formData = new FormData(); // FormData 객체 생성
+
+    // 폼 데이터 수집 함수 : 폼 데이터 수집
+    // let expVal = document.getElementById("exp").value; // 경험치 값 가져오기 
+    // if(expVal === "") expVal = 0; // 경험치 값이 비어있으면 0으로 설정
+    
+    const expInput = document.getElementById("exp"); // 경험치 입력 필드 가져오기
+    const expVal = expInput && expInput.value.trim() !== "" ? Number(expInput.value) : 0; // 경험치 값 가져오기
+    // expVal이 비어있으면 0으로 설정, 아니면 숫자로 변환
+    // Number(expVal) : 문자열을 숫자로 변환, 만약 expVal이 비어있으면 0으로 설정
+    //trim() : 문자열의 앞뒤 공백을 제거하는 메서드
+
+    //날짜 처리 (모델에 의해 자동 처리되므로 주석 처리)
+    // const completedAtInput = document.getElementById("completed_at").value; // 완료 여부 값 가져오기
+    // //const completedAt = completedAtInput ? `${completedAtInput}T00:00:00Z`: null;// 완료 시간 값 가져오기// ISO 형식으로 강제 변환 (chatgpt 수정)
+    // const completedAt = completedAtInput ? new Date(completedAtInput).toISOString() : null; // 완료 시간 값 가져오기
+    
+    // 텍스트 필드 추가
+    formData.append("name", document.getElementById("name").value); // 이름 값 추가
+    formData.append("description", document.getElementById("description").value); // 설명 값 추가   
+    formData.append("complete", document.getElementById("complete").checked); //   완료 여부 값 추가
+    //formData.append("complete", document.getElementById("complete").checked ? "1" : "0"); //   완료 여부 값 추가
+    //formData.append("completed_at", completedAt); // 완료 시간 값 추가 (null 또는 ISO 형식 문자열)
+    formData.append("exp", Number(expVal)); // 경험치 값 추가
+
+    //이미지 파일 추가
+    const imageInput = document.getElementById("image");
+    if (imageInput && imageInput.files.length > 0) { // 이미지 파일이 맞는지 그리고 이미지 파일이 있는지 확인(이미지 개수 >0)
+        formData.append("image", imageInput.files[0]); // 첫 번째 파일 추가
+    }
+    return formData; // 수집한 폼 데이터를 반환
+}
+
+// 서버에 POST 요청을 보내는 함수
+// axiosInstance를 사용하여 /todo/create/ 엔드포인트에 POST 요청을 보내는 함수
+// payLoad는 gatherformData() 함수에서 수집한 폼 데이터입니다
+
+function createTodo(payload){
+    axiosInstance.post("/todo/viewsets/view/", payload) // 어디로 이동
+    .then(response => {
+        window.location.href = "/todo/list/";
+    })//서버에 데이터를 저장한 후 이동할 페이지 링크
+    .catch(error =>{
+        console.error("todo 생성 실패", error);
+        alert("todo 생성 실패했습니다.");
+    }) // 에러메시 경고창 
+}
+</script>    
+
+{% endblock %}
