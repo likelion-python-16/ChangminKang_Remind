@@ -1,0 +1,138 @@
+
+
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="todoDetail"></div> <!-- 받을 그릇 -->
+<div>   
+    <button class = "todoUpdate">수정</button>
+    <button class = "todoDelete">삭제</button>
+</div>
+
+<script>    
+function getCookie(name) {
+  const cookies = decodeURIComponent(document.cookie).split(';');
+
+  for (const cookie of cookies) {
+    const trimmed = cookie.trim();
+    if (trimmed.startsWith(name + '=')) {
+      return trimmed.slice(name.length + 1);
+    }
+  }
+  return '';
+}
+
+
+
+
+// 1. 초기화
+document.addEventListener("DOMContentLoaded",init);
+
+// 2. initialize
+function init() { // init 함수는 페이지가 로드될 때 실행됨
+    const pk = getTodoId(); // pk를 가져오는 함수 --> 변수 저장 // URL에서 todo의 기본키를 추출을 목적
+    loadTodoDetail(pk); // 서버에서 해당 todo 데이터를 가져와서 상세 페이지에 표시
+    bindUpdateButton(pk); // 수정 버튼에 이벤트 핸들러를 바인딩 // 바인딩이란 특정 이벤트(예: 클릭)에 대해 함수를 연결하는 것을 의미
+    bindDeleteButton(pk); // 삭제 버튼에 이벤트 핸들러를 바인딩
+}
+
+// / 3. URL에서 PK 추출     // Url에서 PK(기본키) 추출 -> /todo/update/1/ -> 1 
+function getTodoId() {
+    return window.location.pathname.split('/').filter(Boolean).pop(); // URL에서 마지막 요소가 pk ('/'를 기준으로 분리)
+    // 예: /todo/detail/1/ -> ['todo', 'detail', '1', ''] -> pk는 1
+    // filter(Boolean) 는 빈 문자열을 제거하는 역할을 합니다.
+    // pop()은 배열의 마지막 요소를 반환합니다.
+}
+
+// 4. 기존 todo 데이터를 로드 (axios) & 상세 페이지에 표시
+function loadTodoDetail(pk){
+    // 데이터를 호출 (axios 를 통한 get 요청)
+    axiosInstance
+    .get(`/todo/viewsets/view/${pk}/`) // URL에서 pk를 이용하여 todo 데이터를 가져옴 // 앤드포인트 : URL 주소 호출 (/api/detail/{pk}/)
+    .then(res => renderTodoDetail(res.data)) // 성공적으로 데이터를 가져오면 renderTodoDetail 함수 호출 
+    .catch(err => console.error("로딩실패",err)); // 에러가 발생하면 콘솔에 에러 출력
+}
+
+// 5. 서버에서 받아온 data 항목을 화면에 표시하는 (함수 추출된 Todo 항목들을 화면에 렌더링)
+// function renderTodoDetail(data){
+//   const container = document.querySelector(".todoDetail"); // .todoDetail 클래스를 가진 요소를 선택합니다. .todoDetail{} 랑 같음 / 새로운 요소를 만들지 않고 기존 요소를 선택하여 사용합니다. //
+//   container.innerHTML = ""; // 기존 내용을 비웁니다. // todoDetail 클래스를 가진 요소의 내부 HTML을 비웁니다. 이 작업은 이전에 로드된 내용이 있다면 제거하는 역할을 합니다.
+//   container.className = "todo-item"
+//   container.innerHTML = `
+//         <p><strong>Name:</strong> ${data.name}</p>
+//         <p><strong>Description:</strong> ${data.description}</p>
+//         <p><strong>Complete:</strong> ${data.complete}</p>
+//         <p><strong>Completed At:</strong> ${data.completed_at ? new Date(data.completed_at).toLocaleString() : "아직 완료되지 않음"}</p>
+//         <p><strong>Experience Points:</strong> ${data.exp}</p>
+//         <button class="completeBtn">완료</button>
+//         <hr>
+//     `; // todo 항목의 정보를 표시하는 HTML 구조를 만듭니다.
+// } 를 아래처럼 간단히 표현 가능
+
+function renderTodoDetail(data){
+    const container = document.querySelector(".todoDetail"); // querySelector를 사용하여 .todoDetail 클래스를 가진 요소를 선택합니다. // queryselector
+    container.innerHTML = `
+    <div class="todo-item">
+        <p><strong>Name:</strong> ${data.name}</p>
+        <p><strong>Description:</strong> ${data.description}</p>
+        <p><strong>Complete:</strong> ${data.complete}</p>
+        <p><strong>Completed At:</strong> ${datetimeToString(data.completed_at)}</p>
+        <p><strong>Experience Points:</strong> ${data.exp}</p>
+    </div>
+`;
+}
+
+
+//6. bindUpdateButton 함수 (수정 버튼 클릭 시 처리)
+function bindUpdateButton(pk) {
+    const btn = document.querySelector('.todoUpdate'); // 수정 버튼 요소를 선택합니다.
+    if (!btn) return; // 버튼이 없으면 함수 종료
+    // 버튼이 존재하면 클릭 이벤트 리스너를 추가
+    btn.addEventListener("click", () => {
+        console.log("수정클릭!");
+        window.location.href = `/todo/update/${pk}/`;
+    });
+}  
+// function handleUpdate(pk) {
+//     const payload = {
+//         name: document.getElementById("name").value, // 이름 필드 채우기
+//         description: document.getElementById("description").value, // 설명 필드 채우기
+//         complete: document.getElementById("complete").checked, // 완료 상태 필드 채우기
+//         exp: Number(document.getElementById("exp").value), // 경험치 필드 채우기
+//     }; // payload는 html <input>에 사용자가 입력한 값을 수집한 데이터 객체입니다.
+
+//     // 데이터를 호출
+//     axiosInstance.patch(`/api/update/${pk}/`, payload) // PATCH 요청을 통해 todo 항목을 업데이트합니다.
+//     .then(() => loadTodoDetail(pk)) // 성공적으로 업데이트되면 상세 페이지를 다시 로드합니다.
+//     .catch(err => console.error("업데이트 실패:", err)); // 에러가 발생하면 콘솔에 에러 출력
+// }
+
+//7. bindDeleteButton 함수 (삭제 버튼 클릭 시 처리)
+function bindDeleteButton(pk) {
+    const btn = document.querySelector(".todoDelete"); // 삭제 버튼 요소를 선택합니다.
+    if (!btn) return; // 버튼이 없으면 함수 종료
+    // 버튼이 존재하면 클릭 이벤트 리스너를 추가
+    btn.addEventListener("click", () => {
+        if (!confirm("정말로 삭제하시겠습니까?")) return; // 사용자에게 삭제 확인을 묻습니다. // 사용자가 "확인"을 누르면 삭제를 진행합니다. "취소"를 누르면 아무 작업도 하지 않습니다.
+   //삭제 요청 보기
+    axiosInstance.delete(`/todo/viewsets/view/${pk}/`) // DELETE 요청을 통해 todo 항목을 삭제합니다.
+    .then(() => {window.location.href = "/todo/list/";}) // 삭제 후 목록 페이지로 리다이렉트합니다.
+    .catch(err => 
+    {alert("삭제에 실패했습니다"); 
+    console.error("삭제 실패:", err)}); // 에러가 발생하면 콘솔에 에러 출력
+    }); 
+}
+
+    // function handleDelete(pk) {
+//     if (confirm("정말로 삭제하시겠습니까?")) { // 사용자에게 삭제 확인을 묻습니다.
+//         axiosInstance.delete(`/api/delete/${pk}/`) // DELETE 요청을 통해 todo 항목을 삭제합니다.
+//         .then(() => {
+//             alert("Todo 항목이 삭제되었습니다."); // 삭제 성공 메시지
+//             window.location.href = "/todo/list/"; // 삭제 후 목록 페이지로 리다이렉트
+//         })
+//         .catch(err => console.error("삭제 실패:", err)); // 에러가 발생하면 콘솔에 에러 출력
+//     }
+// }   
+</script>
+{% endblock %}
