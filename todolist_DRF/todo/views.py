@@ -73,3 +73,9 @@ class TodoUpdateViews(UpdateView):
 #     # DeleteView를 사용하면, 기존 객체를 삭제할 때 자동으로 해당 객체를 가져와서 삭제할 수 있습니다.
 
 
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+def logout_view(request):
+  logout(request) # 세션 초기화
+  return redirect('todo_List')

@@ -158,6 +158,7 @@ function extractTodoArray(data) {
   // 예시: data가 { results: [...], count: 10, next: null, previous: null } 형태일 때 results 배열을 반환
   if(Array.isArray(data)) return data;  //메서드로서 데이터가 배열인지 아닌지 판별
   if(Array.isArray(data.data)) return data.data;  // data가 배열이면 그대로 반환합니다. // 페이지네이션이 없는 경우, 즉 단순 배열인 경우입니다.
+  if(Array.isArray(data.results)) return data.results; // data.results가 배열이면 그대로 반환합니다. // 페이지네이션이 있는 경우, 즉 results 배열이 있는 경우입니다.
   return[]; // results가 없으면 빈 배열을 반환합니다.
 }
 
@@ -237,9 +238,11 @@ function createTodoElement(todo) {
     });
 
     //✅ 북마크
-  div.querySelector('.bookmarkBtn').addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleBookmark(this.dataset.id); 
+  div.querySelectorAll('.bookmarkBtn').forEach(btn => {
+    btn.addEventListener('click', function (e) {    
+      e.stopPropagation();
+       toggleBookmark(btn.dataset.id); 
+        });
     });
 
     // ✅ 댓글 등록 버튼(.commentSubmit)에 클릭 이벤트 연결
