@@ -9,11 +9,18 @@ RUN mkdir -p /code
 
 WORKDIR /code
 
-COPY requirements.txt /tmp/requirements.txt
-RUN set -ex && \
-    pip install --upgrade pip && \
-    pip install -r /tmp/requirements.txt && \
-    rm -rf /root/.cache/
+# COPY requirements.txt /tmp/requirements.txt
+# RUN set -ex && \
+#     pip install --upgrade pip && \
+#     pip install -r /tmp/requirements.txt && \
+#     rm -rf /root/.cache/
+
+#pip 기본 설정
+COPY requirements.txt ./
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+
 COPY . /code
 
 ENV SECRET_KEY "Bl6Vck5Ra8v2xo39i44ukcoVMrOTbkKK0OAbHrJ8LnR7ourcvW"

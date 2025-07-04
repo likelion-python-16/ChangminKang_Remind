@@ -27,10 +27,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))  # .env 파일을 읽어옵
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("DJANGO_SECRET_KEY")
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', "fallback-secret-key")  # 환경변수에서 SECRET_KEY를 가져옵니다. 만약 환경변수가 설정되어 있지 않으면, "fallback
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 #FLY 배포용 Allowed Hosts 설정
 APP_NAME = os.environ.get("FLY_APP_NAME")
