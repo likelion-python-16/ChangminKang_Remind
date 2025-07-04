@@ -294,8 +294,8 @@ function toggleLike(id) {
       .then(res => { //서버로부터 받은 응답에서 is_liked와 like_count 값을 추출한다.
           const { is_liked, like_count } = res.data; //is_liked: 현재 유저가 이 Todo를 좋아요 눌렀는지 여부 (true/false), like_count: 이 Todo를 좋아요 누른 총 사람 수
           const btn = document.querySelector(`.likeBtn[data-id="${id}"]`);
-          if (btn) btn.innerHTML = `${is_liked ? '💔' : '❤️'} <span class="count">${like_count}</span>`;
-            // 버튼이 실제 존재한다면: 좋아요 상태에 따라 아이콘을 변경 (❤️ → 좋아요 가능, 💔 → 좋아요 취소 가능), 옆에 좋아요 수(like_count)를 함께 출력
+          if (btn) btn.innerHTML = `${is_liked ? '❤️' : '❤️'} <span class="count">${like_count}</span>`;
+            // 버튼이 실제 존재한다면: 좋아요 상태에 따라 아이콘을 변경 (❤️ → 좋아요 가능, ❤️ → 좋아요 취소 가능), 옆에 좋아요 수(like_count)를 함께 출력
         })
         .catch(err => console.error(" 좋아요 토글 실패:", err)); 
 }
